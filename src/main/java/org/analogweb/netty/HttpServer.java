@@ -12,17 +12,23 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 /**
  * @author snowgooseyk
  */
 public class HttpServer {
 
-	static final boolean SSL = System.getProperty("ssl") != null;
-	static final int PORT = Integer.parseInt(System.getProperty("port",
-			SSL ? "8443" : "8080"));
+	private URI uri;
+	private ServerInitializer initializer;
+	
+	public HttpServer(URI uri){
+		this(uri,new ServerInitializer());
+	}
+
+	public HttpServer(URI uri,ServerInitializer initializer){
+		this.uri = uri;
+		this.initializer = initializer;
+	}
 
 	public static void run(String uri) throws SSLException,
 			GeneralSecurityException, InterruptedException {
@@ -31,27 +37,21 @@ public class HttpServer {
 
 	public static void run(URI uri) throws SSLException,
 			GeneralSecurityException, InterruptedException {
-		// Configure SSL.
-		final SslContext sslCtx;
-		if (SSL) {
-			// TODO handle certificate.
-			SelfSignedCertificate ssc = new SelfSignedCertificate();
-			sslCtx = SslContext.newServerContext(ssc.certificate(),
-					ssc.privateKey());
-		} else {
-			sslCtx = null;
-		}
+		new HttpServer(uri, new ServerInitializer()).start();
+	}
+
+	public void start()
+			throws SSLException, GeneralSecurityException, InterruptedException {
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+		// Default thread count depends on -Dio.netty.eventLoopThreads
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try {
-			ServerBootstrap b = new ServerBootstrap();
-			b.group(bossGroup, workerGroup)
+			ServerBootstrap boot = new ServerBootstrap();
+			boot.group(bossGroup, workerGroup)
 					.channel(NioServerSocketChannel.class)
 					.handler(new LoggingHandler(LogLevel.INFO))
-					.childHandler(new ServerInitializer(sslCtx));
-			Channel ch = b.bind(PORT).sync().channel();
-			System.err.println("Open your web browser and navigate to "
-					+ (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + '/');
+					.childHandler(initializer);
+			Channel ch = boot.bind(uri.getHost(),uri.getPort()).sync().channel();
 			ch.closeFuture().sync();
 		} finally {
 			bossGroup.shutdownGracefully();
