@@ -1,6 +1,5 @@
 package org.analogweb.netty;
 
-import java.io.IOException;
 import java.net.URI;
 
 import org.analogweb.Application;
@@ -8,7 +7,6 @@ import org.analogweb.ApplicationProperties;
 import org.analogweb.RequestContext;
 import org.analogweb.RequestPath;
 import org.analogweb.ResponseContext;
-import org.analogweb.WebApplicationException;
 import org.analogweb.core.DefaultRequestPath;
 
 import io.netty.buffer.ByteBuf;
@@ -70,13 +68,11 @@ public class ServerHandler extends SimpleChannelInboundHandler<Object> {
 				return;
 			}
 			response.commmit(rcontext);
-		} catch (IOException e) {
-			e.printStackTrace();
-			ctx.close();
-		} catch (WebApplicationException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1,
 					INTERNAL_SERVER_ERROR));
+			ctx.close();
 		}
 	}
 

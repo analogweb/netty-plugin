@@ -1,8 +1,6 @@
 package org.analogweb;
 
-import java.net.URI;
-
-import org.analogweb.netty.HttpServer;
+import org.analogweb.netty.HttpServers;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -16,6 +14,6 @@ public class AppTest {
 	@Test
 	@Ignore
 	public void testRun() throws Exception {
-		HttpServer.run(URI.create("http://localhost:8080/"));
+		HttpServers.create("http://localhost:8080/").run();
 	}
 }

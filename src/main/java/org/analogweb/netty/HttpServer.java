@@ -5,6 +5,8 @@ import java.security.GeneralSecurityException;
 
 import javax.net.ssl.SSLException;
 
+import org.analogweb.Server;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -16,10 +18,13 @@ import io.netty.handler.logging.LoggingHandler;
 /**
  * @author snowgooseyk
  */
-public class HttpServer {
+public class HttpServer implements Server {
 
 	private URI uri;
 	private ServerInitializer initializer;
+	private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+	// Default thread count depends on -Dio.netty.eventLoopThreads
+	private EventLoopGroup workerGroup = new NioEventLoopGroup();
 	
 	public HttpServer(URI uri){
 		this(uri,new ServerInitializer());
@@ -30,21 +35,8 @@ public class HttpServer {
 		this.initializer = initializer;
 	}
 
-	public static void run(String uri) throws SSLException,
-			GeneralSecurityException, InterruptedException {
-		run(URI.create(uri));
-	}
-
-	public static void run(URI uri) throws SSLException,
-			GeneralSecurityException, InterruptedException {
-		new HttpServer(uri, new ServerInitializer()).start();
-	}
-
-	public void start()
+	protected void start()
 			throws SSLException, GeneralSecurityException, InterruptedException {
-		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-		// Default thread count depends on -Dio.netty.eventLoopThreads
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		try {
 			ServerBootstrap boot = new ServerBootstrap();
 			boot.group(bossGroup, workerGroup)
@@ -57,5 +49,20 @@ public class HttpServer {
 			bossGroup.shutdownGracefully();
 			workerGroup.shutdownGracefully();
 		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void shutdown(int mode) {
+		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully();
 	}
 }
