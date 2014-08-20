@@ -21,7 +21,7 @@ public class Hello {
   @Route
   public String hello() {
     // Request GET http://localhost:8080/hello and you should see 'Hello World'
-    return "Hello!";
+    return "Hello World";
   }
 
 }
