@@ -1,27 +1,27 @@
 Analogweb Framework Netty Plugin
 ===============================================
 
-Analogweb is tiny HTTP oriented framework.
+Analogweb application running on Netty 4!
 
-## Example
+## Quick Start
 
 ```java
 package org.analogweb.hello;
 
-import java.net.URI;
 import org.analogweb.annotation.Route;
-import org.analogweb.netty.HttpServer;
+import org.analogweb.netty.HttpServers;
 
 @Route("/")
 public class Hello {
 
   public static void main(String... args) {
-      HttpServer.run("http://localhost:8080");
+      HttpServers.create("http://localhost:8080").run();
   }
 
   @Route
   public String hello() {
-    return "Hello World";
+    // Request GET http://localhost:8080/hello and you should see 'Hello World'
+    return "Hello!";
   }
 
 }
