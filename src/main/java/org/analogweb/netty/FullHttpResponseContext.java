@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import org.analogweb.Headers;
 import org.analogweb.RequestContext;
 import org.analogweb.ResponseContext;
+import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.DefaultResponseWriter;
 import org.analogweb.core.MapHeaders;
 
@@ -79,8 +80,9 @@ public class FullHttpResponseContext implements ResponseContext {
 				future.addListener(ChannelFutureListener.CLOSE);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ApplicationRuntimeException(e) {
+				private static final long serialVersionUID = 1L;
+			};
 		}
 	}
 
