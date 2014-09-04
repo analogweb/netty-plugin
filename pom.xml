@@ -16,12 +16,11 @@
 	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 	DEALINGS IN THE SOFTWARE. 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.analogweb</groupId>
 	<artifactId>analogweb-netty</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.9.0</version>
 	<packaging>jar</packaging>
 	<name>analogweb-netty</name>
 	<properties>
@@ -31,7 +30,8 @@
 		<url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-	</scm>
+	  <tag>0.9.0</tag>
+  </scm>
 	<parent>
 		<groupId>org.analogweb</groupId>
 		<artifactId>analogweb-parent-modules</artifactId>
@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-            <version>0.9.0-SNAPSHOT</version>
+            <version>0.9.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
