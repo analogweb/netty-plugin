@@ -28,13 +28,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
+		<url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
 	</scm>
 	<parent>
 		<groupId>org.analogweb</groupId>
 		<artifactId>analogweb-parent-modules</artifactId>
-		<version>6</version>
+		<version>7</version>
 		<relativePath />
 	</parent>
 	<dependencies>
