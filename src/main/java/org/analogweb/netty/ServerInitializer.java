@@ -27,6 +27,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 /**
  * @author snowgooseyk
@@ -37,6 +39,8 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 	private final SslContext sslCtx;
 	private final Application app;
 	private final ApplicationProperties properties;
+	private EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
+			8);
 
 	public ServerInitializer() {
 		this(null);
@@ -98,11 +102,11 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 		ChannelPipeline pipeline = ch.pipeline();
 		SslContext ssl = getSslContext();
 		if (ssl != null) {
-			pipeline.addLast(sslCtx.newHandler(ch.alloc()));
+			pipeline.addLast(ssl.newHandler(ch.alloc()));
 		}
 		pipeline.addLast(new HttpServerCodec());
 		pipeline.addLast(new HttpObjectAggregator(65536));
-		pipeline.addLast(createServerHandler());
+		pipeline.addLast(getHandlerSpecificExecutorGroup(), createServerHandler());
 	}
 
 	protected ServerHandler createServerHandler() {
@@ -123,6 +127,10 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 
 	protected ClassLoader getClassLoader() {
 		return Thread.currentThread().getContextClassLoader();
+	}
+	
+	protected EventExecutorGroup getHandlerSpecificExecutorGroup(){
+		return this.handlerSpecificExecutorGroup;
 	}
 
 	protected List<ClassCollector> getClassCollectors() {
