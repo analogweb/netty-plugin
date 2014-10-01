@@ -20,6 +20,7 @@ import org.analogweb.util.ClassCollector;
 import org.analogweb.util.FileClassCollector;
 import org.analogweb.util.JarClassCollector;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -33,7 +34,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 /**
  * @author snowgooseyk
  */
-public class ServerInitializer extends ChannelInitializer<SocketChannel> {
+public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChannel> {
 
 	static final boolean SSL = System.getProperty("ssl") != null;
 	private final SslContext sslCtx;
@@ -42,30 +43,30 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 	private EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
 			8);
 
-	public ServerInitializer() {
+	public AnalogwebChannelInitializer() {
 		this(null);
 	}
 
-	public ServerInitializer(SslContext ssl) {
+	public AnalogwebChannelInitializer(SslContext ssl) {
 		this(ssl, new WebApplication());
 	}
 
-	public ServerInitializer(SslContext ssl, Application app) {
+	public AnalogwebChannelInitializer(SslContext ssl, Application app) {
 		this(ssl, app, (ApplicationContext) null);
 	}
 
-	public ServerInitializer(SslContext ssl, Application app,
+	public AnalogwebChannelInitializer(SslContext ssl, Application app,
 			ApplicationContext contextResolver) {
 		this(ssl, app, contextResolver, ApplicationPropertiesHolder.configure(
 				app, defaultProperties()));
 	}
 
-	public ServerInitializer(SslContext ssl, Application app,
+	public AnalogwebChannelInitializer(SslContext ssl, Application app,
 			ApplicationProperties props) {
 		this(ssl, app, null, props);
 	}
 
-	public ServerInitializer(SslContext ssl, Application app,
+	public AnalogwebChannelInitializer(SslContext ssl, Application app,
 			ApplicationContext contextResolver, ApplicationProperties props) {
 		Assertion.notNull(app, Application.class.getName());
 		this.sslCtx = ssl == null ? resolveSslContext() : ssl;
@@ -109,8 +110,8 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 		pipeline.addLast(getHandlerSpecificExecutorGroup(), createServerHandler());
 	}
 
-	protected ServerHandler createServerHandler() {
-		return new ServerHandler(getApplication(), getApplicationProperties());
+	protected ChannelHandler createServerHandler() {
+		return new AnalogwebChannelInboundHandler(getApplication(), getApplicationProperties());
 	}
 
 	protected SslContext getSslContext() {

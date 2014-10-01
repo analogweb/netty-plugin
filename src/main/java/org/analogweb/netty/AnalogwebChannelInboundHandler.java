@@ -26,12 +26,12 @@ import io.netty.util.CharsetUtil;
 /**
  * @author snowgooseyk
  */
-public class ServerHandler extends SimpleChannelInboundHandler<Object> {
+public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<Object> {
 
 	private final Application application;
 	private final ApplicationProperties properties;
 
-	public ServerHandler(Application application,
+	public AnalogwebChannelInboundHandler(Application application,
 			ApplicationProperties properties) {
 		this.application = application;
 		this.properties = properties;

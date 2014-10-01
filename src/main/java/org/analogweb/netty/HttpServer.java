@@ -21,16 +21,16 @@ import io.netty.handler.logging.LoggingHandler;
 public class HttpServer implements Server {
 
 	private URI uri;
-	private ServerInitializer initializer;
+	private AnalogwebChannelInitializer initializer;
 	private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 	// Default thread count depends on -Dio.netty.eventLoopThreads
 	private EventLoopGroup workerGroup = new NioEventLoopGroup();
 	
 	public HttpServer(URI uri){
-		this(uri,new ServerInitializer());
+		this(uri,new AnalogwebChannelInitializer());
 	}
 
-	public HttpServer(URI uri,ServerInitializer initializer){
+	public HttpServer(URI uri,AnalogwebChannelInitializer initializer){
 		this.uri = uri;
 		this.initializer = initializer;
 	}

@@ -10,7 +10,7 @@ public class HttpServers {
 		return create(URI.create(uri));
 	}
 
-	public static Server create(String uri,ServerInitializer serverInitializer){
+	public static Server create(String uri,AnalogwebChannelInitializer serverInitializer){
 		return create(URI.create(uri),serverInitializer);
 	}
 
@@ -18,7 +18,7 @@ public class HttpServers {
 		return new HttpServer(uri);
 	}
 
-	public static Server create(URI uri,ServerInitializer serverInitializer){
+	public static Server create(URI uri,AnalogwebChannelInitializer serverInitializer){
 		return new HttpServer(uri,serverInitializer);
 	}
 
