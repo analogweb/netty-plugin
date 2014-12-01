@@ -14,6 +14,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.Future;
 
 /**
  * @author snowgooseyk
@@ -62,7 +63,11 @@ public class HttpServer implements Server {
 
 	@Override
 	public void shutdown(int mode) {
-		bossGroup.shutdownGracefully();
-		workerGroup.shutdownGracefully();
+		Future<?> fb = bossGroup.shutdownGracefully();
+		Future<?> fw = workerGroup.shutdownGracefully();
+		try{
+		    fb.await();
+		    fw.await();
+		} catch(InterruptedException e){}
 	}
 }
