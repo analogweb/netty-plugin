@@ -1,12 +1,5 @@
 package org.analogweb.netty;
 
-import java.net.URI;
-import java.security.GeneralSecurityException;
-
-import javax.net.ssl.SSLException;
-
-import org.analogweb.Server;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -16,58 +9,63 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.Future;
 
+import java.net.URI;
+import java.security.GeneralSecurityException;
+
+import javax.net.ssl.SSLException;
+
+import org.analogweb.Server;
+
 /**
  * @author snowgooseyk
  */
 public class HttpServer implements Server {
 
-	private URI uri;
-	private AnalogwebChannelInitializer initializer;
-	private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-	// Default thread count depends on -Dio.netty.eventLoopThreads
-	private EventLoopGroup workerGroup = new NioEventLoopGroup();
-	
-	public HttpServer(URI uri){
-		this(uri,new AnalogwebChannelInitializer());
-	}
+    private final URI uri;
+    private final AnalogwebChannelInitializer initializer;
+    private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    // Default thread count depends on -Dio.netty.eventLoopThreads
+    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-	public HttpServer(URI uri,AnalogwebChannelInitializer initializer){
-		this.uri = uri;
-		this.initializer = initializer;
-	}
+    public HttpServer(URI uri) {
+        this(uri, new AnalogwebChannelInitializer());
+    }
 
-	protected void start()
-			throws SSLException, GeneralSecurityException, InterruptedException {
-		try {
-			ServerBootstrap boot = new ServerBootstrap();
-			boot.group(bossGroup, workerGroup)
-					.channel(NioServerSocketChannel.class)
-					.handler(new LoggingHandler(LogLevel.INFO))
-					.childHandler(initializer);
-			Channel ch = boot.bind(uri.getHost(),uri.getPort()).sync().channel();
-			ch.closeFuture().sync();
-		} finally {
-			bossGroup.shutdownGracefully();
-			workerGroup.shutdownGracefully();
-		}
-	}
+    public HttpServer(URI uri, AnalogwebChannelInitializer initializer) {
+        this.uri = uri;
+        this.initializer = initializer;
+    }
 
-	@Override
-	public void run() {
-		try {
-			start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    protected void start() throws SSLException, GeneralSecurityException, InterruptedException {
+        try {
+            final ServerBootstrap boot = new ServerBootstrap();
+            boot.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+            .handler(new LoggingHandler(LogLevel.INFO)).childHandler(initializer);
+            final Channel ch = boot.bind(uri.getHost(), uri.getPort()).sync().channel();
+            ch.closeFuture().sync();
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
+    }
 
-	@Override
-	public void shutdown(int mode) {
-		Future<?> fb = bossGroup.shutdownGracefully();
-		Future<?> fw = workerGroup.shutdownGracefully();
-		try{
-		    fb.await();
-		    fw.await();
-		} catch(InterruptedException e){}
-	}
+    @Override
+    public void run() {
+        try {
+            start();
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void shutdown(int mode) {
+        final Future<?> fb = bossGroup.shutdownGracefully();
+        final Future<?> fw = workerGroup.shutdownGracefully();
+        try {
+            fb.await();
+            fw.await();
+        } catch (final InterruptedException e) {
+        }
+    }
 }

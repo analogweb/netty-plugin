@@ -38,7 +38,7 @@ public class IntegrationTest {
 
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
-        ExecutorService es = Executors.newFixedThreadPool(1);
+        final ExecutorService es = Executors.newFixedThreadPool(1);
         es.submit(new Runnable() {
 
             @Override
@@ -57,9 +57,9 @@ public class IntegrationTest {
 
     @Test
     public void testOk() throws Exception {
-        AsyncHttpClient cli = new AsyncHttpClient();
+        final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            Response r = cli.prepareGet("http://localhost:18765/hello").execute().get();
+            final Response r = cli.prepareGet("http://localhost:18765/hello").execute().get();
             assertThat(r.getStatusCode(), is(200));
             assertThat(r.getResponseBody(), is("Hello, World."));
         } finally {
@@ -69,9 +69,9 @@ public class IntegrationTest {
 
     @Test
     public void testNotFound() throws Exception {
-        AsyncHttpClient cli = new AsyncHttpClient();
+        final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            Response r = cli.prepareGet("http://localhost:18765/notfound").execute().get();
+            final Response r = cli.prepareGet("http://localhost:18765/notfound").execute().get();
             assertThat(r.getStatusCode(), is(404));
         } finally {
             cli.close();
@@ -80,9 +80,9 @@ public class IntegrationTest {
 
     @Test
     public void testServerError() throws Exception {
-        AsyncHttpClient cli = new AsyncHttpClient();
+        final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            Response r = cli.prepareGet("http://localhost:18765/exception").execute().get();
+            final Response r = cli.prepareGet("http://localhost:18765/exception").execute().get();
             assertThat(r.getStatusCode(), is(500));
         } finally {
             cli.close();
