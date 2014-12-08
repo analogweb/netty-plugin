@@ -40,12 +40,12 @@ public class HttpServer implements Server {
         try {
             final ServerBootstrap boot = new ServerBootstrap();
             boot.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-            .handler(new LoggingHandler(LogLevel.INFO)).childHandler(initializer);
+                    .handler(new LoggingHandler(LogLevel.INFO)).childHandler(initializer);
             final Channel ch = boot.bind(uri.getHost(), uri.getPort()).sync().channel();
             ch.closeFuture().sync();
         } finally {
-            bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
     }
 
@@ -60,11 +60,11 @@ public class HttpServer implements Server {
 
     @Override
     public void shutdown(int mode) {
-        final Future<?> fb = bossGroup.shutdownGracefully();
         final Future<?> fw = workerGroup.shutdownGracefully();
+        final Future<?> fb = bossGroup.shutdownGracefully();
         try {
-            fb.await();
             fw.await();
+            fb.await();
         } catch (final InterruptedException e) {
         }
     }
