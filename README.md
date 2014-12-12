@@ -3,6 +3,8 @@ Analogweb Framework Netty Plugin
 
 Analogweb application running on Netty 4!
 
+[![Build Status](https://travis-ci.org/analogweb/netty-plugin.svg)](https://travis-ci.org/analogweb/netty-plugin)
+
 ## Quick Start
 
 ```java
