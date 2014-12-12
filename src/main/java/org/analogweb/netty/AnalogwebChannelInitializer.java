@@ -29,13 +29,16 @@ import org.analogweb.util.Assertion;
 import org.analogweb.util.ClassCollector;
 import org.analogweb.util.FileClassCollector;
 import org.analogweb.util.JarClassCollector;
+import org.analogweb.util.StringUtils;
 
 /**
  * @author snowgooseyk
  */
 public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    static final boolean SSL = System.getProperty("ssl") != null;
+    protected static final boolean SSL = System.getProperty("ssl") != null;
+    protected static final int DEFAULT_AGGREGATION_SIZE = 65535;
+    protected static final String MAX_AGGREGATION_SIZE = "analogweb.netty.max.aggregation.size";
     private final SslContext sslCtx;
     private final Application app;
     private final ApplicationProperties properties;
@@ -104,8 +107,20 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
             pipeline.addLast(ssl.newHandler(ch.alloc()));
         }
         pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(65536));
+        pipeline.addLast(new HttpObjectAggregator(getMaxAggregationSize(getApplicationProperties())));
         pipeline.addLast(getHandlerSpecificExecutorGroup(), createServerHandler());
+    }
+
+    private int getMaxAggregationSize(ApplicationProperties applicationProperties) {
+        String size = applicationProperties.getStringProperty(MAX_AGGREGATION_SIZE);
+        if (StringUtils.isNotEmpty(size)) {
+            try {
+                return Integer.parseInt(size);
+            } catch (NumberFormatException e) {
+                // nop.
+            }
+        }
+        return DEFAULT_AGGREGATION_SIZE;
     }
 
     protected ChannelHandler createServerHandler() {
