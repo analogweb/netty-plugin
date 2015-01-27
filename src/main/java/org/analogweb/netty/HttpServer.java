@@ -27,10 +27,6 @@ public class HttpServer implements Server {
     // Default thread count depends on -Dio.netty.eventLoopThreads
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-    public HttpServer(URI uri) {
-        this(uri, new AnalogwebChannelInitializer());
-    }
-
     public HttpServer(URI uri, AnalogwebChannelInitializer initializer) {
         this.uri = uri;
         this.initializer = initializer;

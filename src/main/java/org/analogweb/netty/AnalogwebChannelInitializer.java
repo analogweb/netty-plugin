@@ -1,6 +1,5 @@
 package org.analogweb.netty;
 
-import static org.analogweb.core.DefaultApplicationProperties.defaultProperties;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -23,8 +22,6 @@ import org.analogweb.Application;
 import org.analogweb.ApplicationContext;
 import org.analogweb.ApplicationProperties;
 import org.analogweb.core.ApplicationRuntimeException;
-import org.analogweb.core.WebApplication;
-import org.analogweb.util.ApplicationPropertiesHolder;
 import org.analogweb.util.Assertion;
 import org.analogweb.util.ClassCollector;
 import org.analogweb.util.FileClassCollector;
@@ -43,28 +40,6 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
     private final Application app;
     private final ApplicationProperties properties;
     private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(8);
-
-    public AnalogwebChannelInitializer() {
-        this(null);
-    }
-
-    public AnalogwebChannelInitializer(SslContext ssl) {
-        this(ssl, new WebApplication());
-    }
-
-    public AnalogwebChannelInitializer(SslContext ssl, Application app) {
-        this(ssl, app, (ApplicationContext) null);
-    }
-
-    public AnalogwebChannelInitializer(SslContext ssl, Application app,
-            ApplicationContext contextResolver) {
-        this(ssl, app, contextResolver, ApplicationPropertiesHolder.configure(app,
-                defaultProperties()));
-    }
-
-    public AnalogwebChannelInitializer(SslContext ssl, Application app, ApplicationProperties props) {
-        this(ssl, app, null, props);
-    }
 
     public AnalogwebChannelInitializer(SslContext ssl, Application app,
             ApplicationContext contextResolver, ApplicationProperties props) {

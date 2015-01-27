@@ -3,12 +3,18 @@ package org.analogweb.netty;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.analogweb.Server;
+import org.analogweb.ServerFactoryImpl;
 import org.analogweb.annotation.Get;
 import org.analogweb.annotation.Route;
+import org.analogweb.core.DefaultApplicationContext;
+import org.analogweb.core.DefaultApplicationProperties;
+import org.analogweb.core.WebApplication;
+import org.analogweb.util.Maps;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,7 +49,10 @@ public class IntegrationTest {
 
             @Override
             public void run() {
-                server = HttpServers.create("http://localhost:18765/");
+                server = new ServerFactoryImpl().create(URI.create("http://localhost:18765/"),
+                        DefaultApplicationProperties.defaultProperties(),
+                        DefaultApplicationContext.context(Maps.<String, Object> newEmptyHashMap()),
+                        new WebApplication());
                 server.run();
             }
         });
