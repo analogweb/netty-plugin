@@ -2,6 +2,7 @@ Analogweb Framework Netty Plugin
 ===============================================
 
 Analogweb application running on Netty 4!
+Add this plugin to your application classpath them org.analogweb.core.Servers#run enable to boot Netty server.
 
 [![Build Status](https://travis-ci.org/analogweb/netty-plugin.svg)](https://travis-ci.org/analogweb/netty-plugin)
 
@@ -11,13 +12,13 @@ Analogweb application running on Netty 4!
 package org.analogweb.hello;
 
 import org.analogweb.annotation.Route;
-import org.analogweb.netty.HttpServers;
+import org.analogweb.core.Servers;
 
 @Route("/")
 public class Hello {
 
   public static void main(String... args) {
-      HttpServers.create("http://localhost:8080").run();
+      Servers.run();
   }
 
   @Route
