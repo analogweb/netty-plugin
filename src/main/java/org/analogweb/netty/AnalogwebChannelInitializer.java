@@ -7,6 +7,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
@@ -56,7 +57,7 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
         if (SSL) {
             try {
                 final SelfSignedCertificate ssc = new SelfSignedCertificate();
-                sslCtx = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
+                sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
             } catch (final SSLException e) {
                 throw new ApplicationRuntimeException(e) {
 
