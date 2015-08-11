@@ -24,6 +24,7 @@ import org.analogweb.ApplicationProperties;
 import org.analogweb.RequestContext;
 import org.analogweb.RequestPath;
 import org.analogweb.ResponseContext;
+import org.analogweb.ResponseContext.Response;
 import org.analogweb.core.DefaultRequestPath;
 
 /**
@@ -58,14 +59,14 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
         final RequestContext rcontext = createRequestContext(req);
         final ResponseContext response = createResponseContext(req, ctx);
         try {
-            final int proceed = getApplication().processRequest(rcontext.getRequestPath(), rcontext,
+            final Response proceed = getApplication().processRequest(rcontext.getRequestPath(), rcontext,
                     response);
             if (proceed == Application.NOT_FOUND) {
                 final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
                 sendHttpResponse(ctx, req, res);
                 return;
             }
-            response.commmit(rcontext);
+            proceed.commit(rcontext,response);
         } catch (final Exception e) {
             e.printStackTrace();
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR));

@@ -19,35 +19,32 @@ import java.net.HttpURLConnection;
 
 import org.analogweb.Headers;
 import org.analogweb.RequestContext;
-import org.analogweb.ResponseContext;
+import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
-import org.analogweb.core.DefaultResponseWriter;
 import org.analogweb.core.MapHeaders;
 
 /**
  * @author snowgooseyk
  */
-public class FullHttpResponseContext implements ResponseContext {
+public class FullHttpResponseContext extends AbstractResponseContext {
 
     protected static long NO_CONTENT = -1;
     protected static long CHUNKED = 0;
     private final FullHttpRequest exc;
     private int status = HttpURLConnection.HTTP_OK;
-    private final ResponseWriter writer;
     private final Headers headers;
     private final ChannelHandlerContext context;
 
     public FullHttpResponseContext(FullHttpRequest request, ChannelHandlerContext context) {
         this.exc = request;
-        this.writer = new DefaultResponseWriter();
         this.headers = new MapHeaders();
         this.context = context;
     }
 
     @Override
-    public void commmit(RequestContext req) {
+    public void commit(RequestContext context, Response r){
         try {
-            final ResponseEntity entity = getResponseWriter().getEntity();
+            final ResponseEntity entity = r.getEntity();
             final ByteBuf buffer = Unpooled.buffer();
             final ByteBufOutputStream out = new ByteBufOutputStream(buffer);
             if (entity != null) {
@@ -86,11 +83,6 @@ public class FullHttpResponseContext implements ResponseContext {
     @Override
     public Headers getResponseHeaders() {
         return this.headers;
-    }
-
-    @Override
-    public ResponseWriter getResponseWriter() {
-        return this.writer;
     }
 
     @Override

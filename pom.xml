@@ -30,7 +30,7 @@
 		<url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-  </scm>
+    </scm>
 	<parent>
 		<groupId>org.analogweb</groupId>
 		<artifactId>analogweb-parent-modules</artifactId>
@@ -41,12 +41,12 @@
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.9.8</version>
+			<version>0.9.9-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-http</artifactId>
-			<version>4.0.29.Final</version>
+			<version>4.0.30.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
