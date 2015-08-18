@@ -19,6 +19,8 @@ import java.net.HttpURLConnection;
 
 import org.analogweb.Headers;
 import org.analogweb.RequestContext;
+import org.analogweb.Response;
+import org.analogweb.ResponseEntity;
 import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.MapHeaders;

@@ -24,7 +24,7 @@ import org.analogweb.ApplicationProperties;
 import org.analogweb.RequestContext;
 import org.analogweb.RequestPath;
 import org.analogweb.ResponseContext;
-import org.analogweb.ResponseContext.Response;
+import org.analogweb.Response;
 import org.analogweb.core.DefaultRequestPath;
 
 /**
