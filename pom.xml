@@ -1,5 +1,5 @@
-<!--
-    The MIT Lisence Copyright (c) 2014 - 2015, Analogweb Framework Development Team.
+<!-- 
+    The MIT Lisence Copyright (c) 2014 - 2016, Analogweb Framework Development Team.
     
     Permission is hereby granted, free of charge, to any person obtaining 
 	a copy of this software and associated documentation files (the "Software"), 
@@ -14,9 +14,10 @@
 	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
 	DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
 	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-    DEALINGS IN THE SOFTWARE. 
+	DEALINGS IN THE SOFTWARE. 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.analogweb</groupId>
 	<artifactId>analogweb-netty</artifactId>
@@ -26,12 +27,12 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-    <scm>
+	<scm>
 		<url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
 		<connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 	<parent>
 		<groupId>org.analogweb</groupId>
 		<artifactId>analogweb-parent-modules</artifactId>
@@ -47,7 +48,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-http</artifactId>
-			<version>4.0.30.Final</version>
+			<version>4.0.34.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -68,6 +69,12 @@
 			<groupId>com.ning</groupId>
 			<artifactId>async-http-client</artifactId>
 			<version>1.9.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty</artifactId>
+				</exclusion>
+			</exclusions>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
