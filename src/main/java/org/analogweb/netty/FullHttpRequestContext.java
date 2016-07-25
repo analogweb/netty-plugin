@@ -39,6 +39,6 @@ public class FullHttpRequestContext extends AbstractRequestContext {
 
     @Override
     public String getRequestMethod() {
-        return getFullHttpRequest().getMethod().name();
+        return getFullHttpRequest().method().name();
     }
 }

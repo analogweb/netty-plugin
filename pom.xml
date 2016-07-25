@@ -35,19 +35,24 @@
 	<parent>
 		<groupId>org.analogweb</groupId>
 		<artifactId>analogweb-parent-modules</artifactId>
-		<version>10</version>
+		<version>11</version>
 		<relativePath />
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.analogweb</groupId>
 			<artifactId>analogweb-core</artifactId>
-			<version>0.9.11</version>
+			<version>0.9.12</version>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-http</artifactId>
-			<version>4.0.34.Final</version>
+			<version>4.1.3.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec-http2</artifactId>
+			<version>4.1.3.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

@@ -1,7 +1,5 @@
 package org.analogweb.netty;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -15,6 +13,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.CharsetUtil;
 
 import java.net.URI;
@@ -52,7 +51,7 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
         // Handle a bad request.
-        if (!req.getDecoderResult().isSuccess()) {
+        if (!req.decoderResult().isSuccess()) {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
             return;
         }
@@ -92,22 +91,22 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
     }
 
     protected RequestPath resolveRequestPath(FullHttpRequest req) {
-        return new DefaultRequestPath(URI.create("/"), URI.create(req.getUri()), req.getMethod()
+        return new DefaultRequestPath(URI.create("/"), URI.create(req.uri()), req.method()
                 .name());
     }
 
     private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req,
             FullHttpResponse res) {
         // Generate an error page if response getStatus code is not OK (200).
-        if (res.getStatus().code() != 200) {
-            final ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);
+        if (res.status().code() != 200) {
+            final ByteBuf buf = Unpooled.copiedBuffer(res.status().toString(), CharsetUtil.UTF_8);
             res.content().writeBytes(buf);
             buf.release();
-            setContentLength(res, res.content().readableBytes());
+            HttpUtil.setContentLength(res, res.content().readableBytes());
         }
         // Send the response and close the connection if necessary.
         final ChannelFuture f = ctx.channel().writeAndFlush(res);
-        if (!isKeepAlive(req) || res.getStatus().code() != 200) {
+        if (!HttpUtil.isKeepAlive(req) || res.status().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
     }

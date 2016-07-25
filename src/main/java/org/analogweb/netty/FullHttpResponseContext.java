@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
@@ -57,9 +58,9 @@ public class FullHttpResponseContext extends AbstractResponseContext {
                     HttpResponseStatus.valueOf(getStatus()), buffer);
             final FullHttpRequest request = getFullHttpRequest();
             final boolean close = request.headers()
-                    .contains("Connection", HttpHeaders.Values.CLOSE, true)
-                    || request.getProtocolVersion().equals(HttpVersion.HTTP_1_0)
-                    && !request.headers().contains("Connection", HttpHeaders.Values.KEEP_ALIVE,
+                    .contains("Connection", HttpHeaderValues.CLOSE, true)
+                    || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
+                    && !request.headers().contains("Connection", HttpHeaderValues.KEEP_ALIVE,
                             true);
             if (!close) {
                 response.headers().set("Content-Length", buffer.readableBytes());
