@@ -18,19 +18,18 @@ import io.netty.util.CharsetUtil;
 
 import java.net.URI;
 
-import org.analogweb.Application;
-import org.analogweb.ApplicationProperties;
-import org.analogweb.RequestContext;
-import org.analogweb.RequestPath;
-import org.analogweb.ResponseContext;
-import org.analogweb.Response;
+import io.netty.util.internal.ThrowableUtil;
+import org.analogweb.*;
 import org.analogweb.core.DefaultRequestPath;
+import org.analogweb.util.logging.Log;
+import org.analogweb.util.logging.Logs;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<Object> {
 
+    private static final Log log = Logs.getLog(AnalogwebChannelInboundHandler.class);
     private final Application application;
     private final ApplicationProperties properties;
 
@@ -67,7 +66,7 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
             }
             proceed.commit(rcontext,response);
         } catch (final Exception e) {
-            e.printStackTrace();
+            log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE,"ENT000001",e);
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR));
             ctx.close();
         }

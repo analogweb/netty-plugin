@@ -22,25 +22,30 @@ import javax.net.ssl.SSLException;
 import org.analogweb.Application;
 import org.analogweb.ApplicationContext;
 import org.analogweb.ApplicationProperties;
+import org.analogweb.ServerFactoryImpl;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.util.Assertion;
 import org.analogweb.util.ClassCollector;
 import org.analogweb.util.FileClassCollector;
 import org.analogweb.util.JarClassCollector;
 import org.analogweb.util.StringUtils;
+import org.analogweb.util.logging.Log;
+import org.analogweb.util.logging.Logs;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     protected static final boolean SSL = System.getProperty("ssl") != null;
-    protected static final int DEFAULT_AGGREGATION_SIZE = 65535;
+    protected static final int DEFAULT_AGGREGATION_SIZE = 10485760;
     protected static final String MAX_AGGREGATION_SIZE = "analogweb.netty.max.aggregation.size";
+    private static final Log log = Logs.getLog(AnalogwebChannelInitializer.class);
     private final SslContext sslCtx;
     private final Application app;
     private final ApplicationProperties properties;
-    private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(8);
+    private static final int DEFAULT_PARALLELISM = Runtime.getRuntime().availableProcessors();
+    private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(DEFAULT_PARALLELISM);
 
     public AnalogwebChannelInitializer(SslContext ssl, Application app,
             ApplicationContext contextResolver, ApplicationProperties props) {
@@ -65,7 +70,6 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
                 };
             } catch (final CertificateException e) {
                 throw new ApplicationRuntimeException(e) {
-
                     private static final long serialVersionUID = 1L;
                 };
             }
@@ -93,7 +97,7 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
             try {
                 return Integer.parseInt(size);
             } catch (NumberFormatException e) {
-                // nop.
+                log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE,"WNT000001",e,MAX_AGGREGATION_SIZE);
             }
         }
         return DEFAULT_AGGREGATION_SIZE;
