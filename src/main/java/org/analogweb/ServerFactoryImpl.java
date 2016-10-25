@@ -12,12 +12,16 @@ import org.analogweb.Server;
 import org.analogweb.ServerFactory;
 import org.analogweb.netty.AnalogwebChannelInitializer;
 import org.analogweb.netty.HttpServers;
+import org.analogweb.util.MessageResource;
+import org.analogweb.util.PropertyResourceBundleMessageResource;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 public class ServerFactoryImpl implements ServerFactory {
 
+    public static final MessageResource PLUGIN_MESSAGE_RESOURCE = new PropertyResourceBundleMessageResource(
+            "org.analogweb.netty.analog-messages");
     @Override
     public Server create(URI uri, ApplicationProperties properties, ApplicationContext context,
             Application application) {
