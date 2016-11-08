@@ -81,11 +81,20 @@ public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChanne
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
         final SslContext ssl = getSslContext();
-        if (ssl != null) {
-            pipeline.addLast(ssl.newHandler(ch.alloc()));
+        if(ssl == null) {
+            initChannelWithClearText(ch);
+        } else {
+            initChannelWithSsl(ssl,ch);
         }
+    }
+
+    protected void initChannelWithSsl(SslContext sslContext,SocketChannel ch) throws Exception {
+        ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()), new AnalogwebApplicationProtocolNegotiationHandler(getApplication(),getApplicationProperties()));
+    }
+
+    protected void initChannelWithClearText(SocketChannel ch) throws Exception {
+        final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(getMaxAggregationSize(getApplicationProperties())));
         pipeline.addLast(getHandlerSpecificExecutorGroup(), createServerHandler());

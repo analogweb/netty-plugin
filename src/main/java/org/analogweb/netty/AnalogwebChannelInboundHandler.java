@@ -18,8 +18,13 @@ import io.netty.util.CharsetUtil;
 
 import java.net.URI;
 
-import io.netty.util.internal.ThrowableUtil;
-import org.analogweb.*;
+import org.analogweb.Application;
+import org.analogweb.ApplicationProperties;
+import org.analogweb.RequestContext;
+import org.analogweb.RequestPath;
+import org.analogweb.Response;
+import org.analogweb.ResponseContext;
+import org.analogweb.ServerFactoryImpl;
 import org.analogweb.core.DefaultRequestPath;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
@@ -94,7 +99,7 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
                 .name());
     }
 
-    private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req,
+    private void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req,
             FullHttpResponse res) {
         // Generate an error page if response getStatus code is not OK (200).
         if (res.status().code() != 200) {
