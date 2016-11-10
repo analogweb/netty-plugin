@@ -35,111 +35,127 @@ import org.analogweb.util.logging.Logs;
 /**
  * @author y2k2mt
  */
-public class AnalogwebChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class AnalogwebChannelInitializer
+		extends
+			ChannelInitializer<SocketChannel> {
 
-    protected static final boolean SSL = System.getProperty("ssl") != null;
-    protected static final int DEFAULT_AGGREGATION_SIZE = 10485760;
-    protected static final String MAX_AGGREGATION_SIZE = "analogweb.netty.max.aggregation.size";
-    private static final Log log = Logs.getLog(AnalogwebChannelInitializer.class);
-    private final SslContext sslCtx;
-    private final Application app;
-    private final ApplicationProperties properties;
-    private static final int DEFAULT_PARALLELISM = Runtime.getRuntime().availableProcessors();
-    private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(DEFAULT_PARALLELISM);
+	protected static final boolean SSL = System.getProperty("ssl") != null;
+	protected static final int DEFAULT_AGGREGATION_SIZE = 10485760;
+	protected static final String MAX_AGGREGATION_SIZE = "analogweb.netty.max.aggregation.size";
+	private static final Log log = Logs
+			.getLog(AnalogwebChannelInitializer.class);
+	private final SslContext sslCtx;
+	private final Application app;
+	private final ApplicationProperties properties;
+	private static final int DEFAULT_PARALLELISM = Runtime.getRuntime()
+			.availableProcessors();
+	private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
+			DEFAULT_PARALLELISM);
 
-    public AnalogwebChannelInitializer(SslContext ssl, Application app,
-            ApplicationContext contextResolver, ApplicationProperties props) {
-        Assertion.notNull(app, Application.class.getName());
-        this.sslCtx = ssl == null ? resolveSslContext() : ssl;
-        this.properties = props;
-        this.app = app;
-        getApplication().run(contextResolver, getApplicationProperties(), getClassCollectors(),
-                getClassLoader());
-    }
+	public AnalogwebChannelInitializer(SslContext ssl, Application app,
+			ApplicationContext contextResolver, ApplicationProperties props) {
+		Assertion.notNull(app, Application.class.getName());
+		this.sslCtx = ssl == null ? resolveSslContext() : ssl;
+		this.properties = props;
+		this.app = app;
+		getApplication().run(contextResolver, getApplicationProperties(),
+				getClassCollectors(), getClassLoader());
+	}
 
-    protected SslContext resolveSslContext() {
-        final SslContext sslCtx;
-        if (SSL) {
-            try {
-                final SelfSignedCertificate ssc = new SelfSignedCertificate();
-                sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-            } catch (final SSLException e) {
-                throw new ApplicationRuntimeException(e) {
+	protected SslContext resolveSslContext() {
+		final SslContext sslCtx;
+		if (SSL) {
+			try {
+				final SelfSignedCertificate ssc = new SelfSignedCertificate();
+				sslCtx = SslContextBuilder.forServer(ssc.certificate(),
+						ssc.privateKey()).build();
+			} catch (final SSLException e) {
+				throw new ApplicationRuntimeException(e) {
 
-                    private static final long serialVersionUID = 1L;
-                };
-            } catch (final CertificateException e) {
-                throw new ApplicationRuntimeException(e) {
-                    private static final long serialVersionUID = 1L;
-                };
-            }
-        } else {
-            sslCtx = null;
-        }
-        return sslCtx;
-    }
+					private static final long serialVersionUID = 1L;
+				};
+			} catch (final CertificateException e) {
+				throw new ApplicationRuntimeException(e) {
+					private static final long serialVersionUID = 1L;
+				};
+			}
+		} else {
+			sslCtx = null;
+		}
+		return sslCtx;
+	}
 
-    @Override
-    public void initChannel(SocketChannel ch) throws Exception {
-        final SslContext ssl = getSslContext();
-        if(ssl == null) {
-            initChannelWithClearText(ch);
-        } else {
-            initChannelWithSsl(ssl,ch);
-        }
-    }
+	@Override
+	public void initChannel(SocketChannel ch) throws Exception {
+		final SslContext ssl = getSslContext();
+		if (ssl == null) {
+			initChannelWithClearText(ch);
+		} else {
+			initChannelWithSsl(ssl, ch);
+		}
+	}
 
-    protected void initChannelWithSsl(SslContext sslContext,SocketChannel ch) throws Exception {
-        ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()), new AnalogwebApplicationProtocolNegotiationHandler(getApplication(),getApplicationProperties()));
-    }
+	protected void initChannelWithSsl(SslContext sslContext, SocketChannel ch)
+			throws Exception {
+		ch.pipeline().addLast(
+				sslCtx.newHandler(ch.alloc()),
+				new AnalogwebApplicationProtocolNegotiationHandler(
+						getApplication(), getApplicationProperties()));
+	}
 
-    protected void initChannelWithClearText(SocketChannel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(getMaxAggregationSize(getApplicationProperties())));
-        pipeline.addLast(getHandlerSpecificExecutorGroup(), createServerHandler());
-    }
+	protected void initChannelWithClearText(SocketChannel ch) throws Exception {
+		final ChannelPipeline pipeline = ch.pipeline();
+		pipeline.addLast(new HttpServerCodec());
+		pipeline.addLast(new HttpObjectAggregator(
+				getMaxAggregationSize(getApplicationProperties())));
+		pipeline.addLast(getHandlerSpecificExecutorGroup(),
+				createServerHandler());
+	}
 
-    private int getMaxAggregationSize(ApplicationProperties applicationProperties) {
-        String size = applicationProperties.getStringProperty(MAX_AGGREGATION_SIZE);
-        if (StringUtils.isNotEmpty(size)) {
-            try {
-                return Integer.parseInt(size);
-            } catch (NumberFormatException e) {
-                log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE,"WNT000001",e,MAX_AGGREGATION_SIZE);
-            }
-        }
-        return DEFAULT_AGGREGATION_SIZE;
-    }
+	private int getMaxAggregationSize(
+			ApplicationProperties applicationProperties) {
+		String size = applicationProperties
+				.getStringProperty(MAX_AGGREGATION_SIZE);
+		if (StringUtils.isNotEmpty(size)) {
+			try {
+				return Integer.parseInt(size);
+			} catch (NumberFormatException e) {
+				log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE, "WNT000001",
+						e, MAX_AGGREGATION_SIZE);
+			}
+		}
+		return DEFAULT_AGGREGATION_SIZE;
+	}
 
-    protected ChannelHandler createServerHandler() {
-        return new AnalogwebChannelInboundHandler(getApplication(), getApplicationProperties());
-    }
+	protected ChannelHandler createServerHandler() {
+		return new AnalogwebChannelInboundHandler(getApplication(),
+				getApplicationProperties());
+	}
 
-    protected SslContext getSslContext() {
-        return this.sslCtx;
-    }
+	protected SslContext getSslContext() {
+		return this.sslCtx;
+	}
 
-    protected Application getApplication() {
-        return this.app;
-    }
+	protected Application getApplication() {
+		return this.app;
+	}
 
-    protected ApplicationProperties getApplicationProperties() {
-        return this.properties;
-    }
+	protected ApplicationProperties getApplicationProperties() {
+		return this.properties;
+	}
 
-    protected ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
-    }
+	protected ClassLoader getClassLoader() {
+		return Thread.currentThread().getContextClassLoader();
+	}
 
-    protected EventExecutorGroup getHandlerSpecificExecutorGroup() {
-        return this.handlerSpecificExecutorGroup;
-    }
+	protected EventExecutorGroup getHandlerSpecificExecutorGroup() {
+		return this.handlerSpecificExecutorGroup;
+	}
 
-    protected List<ClassCollector> getClassCollectors() {
-        final List<ClassCollector> list = new ArrayList<ClassCollector>();
-        list.add(new JarClassCollector());
-        list.add(new FileClassCollector());
-        return Collections.unmodifiableList(list);
-    }
+	protected List<ClassCollector> getClassCollectors() {
+		final List<ClassCollector> list = new ArrayList<ClassCollector>();
+		list.add(new JarClassCollector());
+		list.add(new FileClassCollector());
+		return Collections.unmodifiableList(list);
+	}
 }

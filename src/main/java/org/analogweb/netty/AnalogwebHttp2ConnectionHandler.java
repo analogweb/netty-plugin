@@ -22,27 +22,34 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 /**
  * @author y2k2mt
  */
-public class AnalogwebHttp2ConnectionHandler extends Http2ConnectionHandler implements Http2FrameListener {
+public class AnalogwebHttp2ConnectionHandler extends Http2ConnectionHandler
+		implements
+			Http2FrameListener {
 
 	private Application application;
 	private ApplicationProperties properties;
 
-	protected AnalogwebHttp2ConnectionHandler(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder,
-			Http2Settings initialSettings, Application app, ApplicationProperties props) {
+	protected AnalogwebHttp2ConnectionHandler(Http2ConnectionDecoder decoder,
+			Http2ConnectionEncoder encoder, Http2Settings initialSettings,
+			Application app, ApplicationProperties props) {
 		super(decoder, encoder, initialSettings);
 		this.application = app;
 		this.properties = props;
 	}
 
 	// TODO implement.
-	protected void handleRequest(ChannelHandlerContext ctx, Http2Headers headers, int streamId, ByteBuf payload) {
+	protected void handleRequest(ChannelHandlerContext ctx,
+			Http2Headers headers, int streamId, ByteBuf payload) {
 		try {
-			FullHttpRequest req = HttpConversionUtil.toFullHttpRequest(streamId, headers, payload.alloc(), false);
+			FullHttpRequest req = HttpConversionUtil.toFullHttpRequest(
+					streamId, headers, payload.alloc(), false);
 			RequestContext rcontext = createRequestContext(req);
 			final ResponseContext response = createResponseContext(req, ctx);
-			final Response proceed = getApplication().processRequest(rcontext.getRequestPath(), rcontext, response);
+			final Response proceed = getApplication().processRequest(
+					rcontext.getRequestPath(), rcontext, response);
 			if (proceed == Application.NOT_FOUND) {
-				final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
+				final FullHttpResponse res = new DefaultFullHttpResponse(
+						HTTP_1_1, NOT_FOUND);
 				sendHttpResponse(ctx, req, res);
 				return;
 			}
@@ -53,10 +60,12 @@ public class AnalogwebHttp2ConnectionHandler extends Http2ConnectionHandler impl
 		}
 	}
 
-	private void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req, FullHttpResponse res) {
+	private void sendHttpResponse(ChannelHandlerContext ctx,
+			FullHttpRequest req, FullHttpResponse res) {
 		// Generate an error page if response getStatus code is not OK (200).
 		if (res.status().code() != 200) {
-			final ByteBuf buf = Unpooled.copiedBuffer(res.status().toString(), CharsetUtil.UTF_8);
+			final ByteBuf buf = Unpooled.copiedBuffer(res.status().toString(),
+					CharsetUtil.UTF_8);
 			res.content().writeBytes(buf);
 			buf.release();
 			HttpUtil.setContentLength(res, res.content().readableBytes());
@@ -73,7 +82,8 @@ public class AnalogwebHttp2ConnectionHandler extends Http2ConnectionHandler impl
 				getApplicationProperties().getDefaultClientLocale());
 	}
 
-	protected ResponseContext createResponseContext(FullHttpRequest req, ChannelHandlerContext ctx) {
+	protected ResponseContext createResponseContext(FullHttpRequest req,
+			ChannelHandlerContext ctx) {
 		return new FullHttpResponseContext(req, ctx);
 	}
 
@@ -86,79 +96,89 @@ public class AnalogwebHttp2ConnectionHandler extends Http2ConnectionHandler impl
 	}
 
 	protected RequestPath resolveRequestPath(FullHttpRequest req) {
-		return new DefaultRequestPath(URI.create("/"), URI.create(req.uri()), req.method().name());
+		return new DefaultRequestPath(URI.create("/"), URI.create(req.uri()),
+				req.method().name());
 	}
 
 	@Override
-	public int onDataRead(ChannelHandlerContext channelHandlerContext, int i, ByteBuf byteBuf, int i1, boolean b)
-			throws Http2Exception {
+	public int onDataRead(ChannelHandlerContext channelHandlerContext, int i,
+			ByteBuf byteBuf, int i1, boolean b) throws Http2Exception {
 		return 0;
 	}
 
 	@Override
-	public void onHeadersRead(ChannelHandlerContext channelHandlerContext, int i, Http2Headers http2Headers, int i1,
-			boolean b) throws Http2Exception {
-
-	}
-
-	@Override
-	public void onHeadersRead(ChannelHandlerContext channelHandlerContext, int i, Http2Headers http2Headers, int i1,
-			short i2, boolean b, int i3, boolean b1) throws Http2Exception {
-
-	}
-
-	@Override
-	public void onPriorityRead(ChannelHandlerContext channelHandlerContext, int i, int i1, short i2, boolean b)
+	public void onHeadersRead(ChannelHandlerContext channelHandlerContext,
+			int i, Http2Headers http2Headers, int i1, boolean b)
 			throws Http2Exception {
 
 	}
 
 	@Override
-	public void onRstStreamRead(ChannelHandlerContext channelHandlerContext, int i, long l) throws Http2Exception {
+	public void onHeadersRead(ChannelHandlerContext channelHandlerContext,
+			int i, Http2Headers http2Headers, int i1, short i2, boolean b,
+			int i3, boolean b1) throws Http2Exception {
 
 	}
 
 	@Override
-	public void onSettingsAckRead(ChannelHandlerContext channelHandlerContext) throws Http2Exception {
+	public void onPriorityRead(ChannelHandlerContext channelHandlerContext,
+			int i, int i1, short i2, boolean b) throws Http2Exception {
 
 	}
 
 	@Override
-	public void onSettingsRead(ChannelHandlerContext channelHandlerContext, Http2Settings http2Settings)
+	public void onRstStreamRead(ChannelHandlerContext channelHandlerContext,
+			int i, long l) throws Http2Exception {
+
+	}
+
+	@Override
+	public void onSettingsAckRead(ChannelHandlerContext channelHandlerContext)
 			throws Http2Exception {
 
 	}
 
 	@Override
-	public void onPingRead(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Http2Exception {
+	public void onSettingsRead(ChannelHandlerContext channelHandlerContext,
+			Http2Settings http2Settings) throws Http2Exception {
 
 	}
 
 	@Override
-	public void onPingAckRead(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Http2Exception {
-
-	}
-
-	@Override
-	public void onPushPromiseRead(ChannelHandlerContext channelHandlerContext, int i, int i1, Http2Headers http2Headers,
-			int i2) throws Http2Exception {
-
-	}
-
-	@Override
-	public void onGoAwayRead(ChannelHandlerContext channelHandlerContext, int i, long l, ByteBuf byteBuf)
-			throws Http2Exception {
-
-	}
-
-	@Override
-	public void onWindowUpdateRead(ChannelHandlerContext channelHandlerContext, int i, int i1) throws Http2Exception {
-
-	}
-
-	@Override
-	public void onUnknownFrame(ChannelHandlerContext channelHandlerContext, byte b, int i, Http2Flags http2Flags,
+	public void onPingRead(ChannelHandlerContext channelHandlerContext,
 			ByteBuf byteBuf) throws Http2Exception {
+
+	}
+
+	@Override
+	public void onPingAckRead(ChannelHandlerContext channelHandlerContext,
+			ByteBuf byteBuf) throws Http2Exception {
+
+	}
+
+	@Override
+	public void onPushPromiseRead(ChannelHandlerContext channelHandlerContext,
+			int i, int i1, Http2Headers http2Headers, int i2)
+			throws Http2Exception {
+
+	}
+
+	@Override
+	public void onGoAwayRead(ChannelHandlerContext channelHandlerContext,
+			int i, long l, ByteBuf byteBuf) throws Http2Exception {
+
+	}
+
+	@Override
+	public void onWindowUpdateRead(ChannelHandlerContext channelHandlerContext,
+			int i, int i1) throws Http2Exception {
+
+	}
+
+	@Override
+	public void onUnknownFrame(ChannelHandlerContext channelHandlerContext,
+			byte b, int i, Http2Flags http2Flags, ByteBuf byteBuf)
+			throws Http2Exception {
 
 	}
 	// TODO implement.

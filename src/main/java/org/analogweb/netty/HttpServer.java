@@ -21,47 +21,51 @@ import org.analogweb.Server;
  */
 public class HttpServer implements Server {
 
-    private final URI uri;
-    private final AnalogwebChannelInitializer initializer;
-    private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    // Default thread count depends on -Dio.netty.eventLoopThreads
-    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
+	private final URI uri;
+	private final AnalogwebChannelInitializer initializer;
+	private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+	// Default thread count depends on -Dio.netty.eventLoopThreads
+	private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-    public HttpServer(URI uri, AnalogwebChannelInitializer initializer) {
-        this.uri = uri;
-        this.initializer = initializer;
-    }
+	public HttpServer(URI uri, AnalogwebChannelInitializer initializer) {
+		this.uri = uri;
+		this.initializer = initializer;
+	}
 
-    protected void start() throws SSLException, GeneralSecurityException, InterruptedException {
-        try {
-            final ServerBootstrap boot = new ServerBootstrap();
-            boot.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO)).childHandler(initializer);
-            final Channel ch = boot.bind(uri.getHost(), uri.getPort()).sync().channel();
-            ch.closeFuture().sync();
-        } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-        }
-    }
+	protected void start() throws SSLException, GeneralSecurityException,
+			InterruptedException {
+		try {
+			final ServerBootstrap boot = new ServerBootstrap();
+			boot.group(bossGroup, workerGroup)
+					.channel(NioServerSocketChannel.class)
+					.handler(new LoggingHandler(LogLevel.INFO))
+					.childHandler(initializer);
+			final Channel ch = boot.bind(uri.getHost(), uri.getPort()).sync()
+					.channel();
+			ch.closeFuture().sync();
+		} finally {
+			workerGroup.shutdownGracefully();
+			bossGroup.shutdownGracefully();
+		}
+	}
 
-    @Override
-    public void run() {
-        try {
-            start();
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
-    }
+	@Override
+	public void run() {
+		try {
+			start();
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    @Override
-    public void shutdown(int mode) {
-        final Future<?> fw = workerGroup.shutdownGracefully();
-        final Future<?> fb = bossGroup.shutdownGracefully();
-        try {
-            fw.await();
-            fb.await();
-        } catch (final InterruptedException e) {
-        }
-    }
+	@Override
+	public void shutdown(int mode) {
+		final Future<?> fw = workerGroup.shutdownGracefully();
+		final Future<?> fb = bossGroup.shutdownGracefully();
+		try {
+			fw.await();
+			fb.await();
+		} catch (final InterruptedException e) {
+		}
+	}
 }

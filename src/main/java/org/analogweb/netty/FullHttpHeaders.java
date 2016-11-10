@@ -12,29 +12,29 @@ import org.analogweb.Headers;
  */
 public class FullHttpHeaders implements Headers {
 
-    private final HttpHeaders source;
+	private final HttpHeaders source;
 
-    public FullHttpHeaders(HttpHeaders headers) {
-        this.source = headers;
-    }
+	public FullHttpHeaders(HttpHeaders headers) {
+		this.source = headers;
+	}
 
-    @Override
-    public boolean contains(String name) {
-        return this.source.contains(name);
-    }
+	@Override
+	public boolean contains(String name) {
+		return this.source.contains(name);
+	}
 
-    @Override
-    public List<String> getNames() {
-        return new ArrayList<String>(this.source.names());
-    }
+	@Override
+	public List<String> getNames() {
+		return new ArrayList<String>(this.source.names());
+	}
 
-    @Override
-    public List<String> getValues(String name) {
-        return this.source.getAll(name);
-    }
+	@Override
+	public List<String> getValues(String name) {
+		return this.source.getAll(name);
+	}
 
-    @Override
-    public void putValue(String name, String value) {
-        this.source.add(name, value);
-    }
+	@Override
+	public void putValue(String name, String value) {
+		this.source.add(name, value);
+	}
 }

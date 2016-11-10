@@ -31,77 +31,80 @@ import org.analogweb.core.MapHeaders;
  */
 public class FullHttpResponseContext extends AbstractResponseContext {
 
-    protected static long NO_CONTENT = -1;
-    protected static long CHUNKED = 0;
-    private final FullHttpRequest exc;
-    private int status = HttpURLConnection.HTTP_OK;
-    private final Headers headers;
-    private final ChannelHandlerContext context;
+	protected static long NO_CONTENT = -1;
+	protected static long CHUNKED = 0;
+	private final FullHttpRequest exc;
+	private int status = HttpURLConnection.HTTP_OK;
+	private final Headers headers;
+	private final ChannelHandlerContext context;
 
-    public FullHttpResponseContext(FullHttpRequest request, ChannelHandlerContext context) {
-        this.exc = request;
-        this.headers = new MapHeaders();
-        this.context = context;
-    }
+	public FullHttpResponseContext(FullHttpRequest request,
+			ChannelHandlerContext context) {
+		this.exc = request;
+		this.headers = new MapHeaders();
+		this.context = context;
+	}
 
-    @Override
-    public void commit(RequestContext context, Response r){
-        try {
-            final ResponseEntity entity = r.getEntity();
-            final ByteBuf buffer = Unpooled.buffer();
-            final ByteBufOutputStream out = new ByteBufOutputStream(buffer);
-            if (entity != null) {
-                entity.writeInto(out);
-            }
-            out.flush();
-            final FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.valueOf(getStatus()), buffer);
-            final FullHttpRequest request = getFullHttpRequest();
-            final boolean close = request.headers()
-                    .contains("Connection", HttpHeaderValues.CLOSE, true)
-                    || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
-                    && !request.headers().contains("Connection", HttpHeaderValues.KEEP_ALIVE,
-                            true);
-            if (!close) {
-                response.headers().set("Content-Length", buffer.readableBytes());
-            }
-            final HttpHeaders headers = response.headers();
-            final Headers analogHeaders = getResponseHeaders();
-            for (final String headerName : analogHeaders.getNames()) {
-                headers.set(headerName, analogHeaders.getValues(headerName));
-            }
-            final Channel channel = getChannelHandlerContext().channel();
-            final ChannelFuture future = channel.writeAndFlush(response);
-            if (close) {
-                future.addListener(ChannelFutureListener.CLOSE);
-            }
-        } catch (final IOException e) {
-            throw new ApplicationRuntimeException(e) {
+	@Override
+	public void commit(RequestContext context, Response r) {
+		try {
+			final ResponseEntity entity = r.getEntity();
+			final ByteBuf buffer = Unpooled.buffer();
+			final ByteBufOutputStream out = new ByteBufOutputStream(buffer);
+			if (entity != null) {
+				entity.writeInto(out);
+			}
+			out.flush();
+			final FullHttpResponse response = new DefaultFullHttpResponse(
+					HttpVersion.HTTP_1_1,
+					HttpResponseStatus.valueOf(getStatus()), buffer);
+			final FullHttpRequest request = getFullHttpRequest();
+			final boolean close = request.headers().contains("Connection",
+					HttpHeaderValues.CLOSE, true)
+					|| request.protocolVersion().equals(HttpVersion.HTTP_1_0)
+					&& !request.headers().contains("Connection",
+							HttpHeaderValues.KEEP_ALIVE, true);
+			if (!close) {
+				response.headers()
+						.set("Content-Length", buffer.readableBytes());
+			}
+			final HttpHeaders headers = response.headers();
+			final Headers analogHeaders = getResponseHeaders();
+			for (final String headerName : analogHeaders.getNames()) {
+				headers.set(headerName, analogHeaders.getValues(headerName));
+			}
+			final Channel channel = getChannelHandlerContext().channel();
+			final ChannelFuture future = channel.writeAndFlush(response);
+			if (close) {
+				future.addListener(ChannelFutureListener.CLOSE);
+			}
+		} catch (final IOException e) {
+			throw new ApplicationRuntimeException(e) {
 
-                private static final long serialVersionUID = 1L;
-            };
-        }
-    }
+				private static final long serialVersionUID = 1L;
+			};
+		}
+	}
 
-    @Override
-    public Headers getResponseHeaders() {
-        return this.headers;
-    }
+	@Override
+	public Headers getResponseHeaders() {
+		return this.headers;
+	}
 
-    @Override
-    public void setStatus(int status) {
-        this.status = status;
-    }
+	@Override
+	public void setStatus(int status) {
+		this.status = status;
+	}
 
-    protected int getStatus() {
-        return this.status;
-    }
+	protected int getStatus() {
+		return this.status;
+	}
 
-    protected FullHttpRequest getFullHttpRequest() {
-        return this.exc;
-    }
+	protected FullHttpRequest getFullHttpRequest() {
+		return this.exc;
+	}
 
-    protected ChannelHandlerContext getChannelHandlerContext() {
-        return this.context;
-    }
+	protected ChannelHandlerContext getChannelHandlerContext() {
+		return this.context;
+	}
 }
