@@ -18,10 +18,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import org.analogweb.Headers;
-import org.analogweb.RequestContext;
-import org.analogweb.Response;
-import org.analogweb.ResponseEntity;
+import org.analogweb.*;
 import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.MapHeaders;
@@ -50,11 +47,10 @@ public class FullHttpResponseContext extends AbstractResponseContext {
 		try {
 			final ResponseEntity entity = r.getEntity();
 			final ByteBuf buffer = Unpooled.buffer();
-			final ByteBufOutputStream out = new ByteBufOutputStream(buffer);
+			final WritableBuffer out = ByteBufWritableBuffer.writeBuffer(buffer);
 			if (entity != null) {
 				entity.writeInto(out);
 			}
-			out.flush();
 			final FullHttpResponse response = new DefaultFullHttpResponse(
 					HttpVersion.HTTP_1_1,
 					HttpResponseStatus.valueOf(getStatus()), buffer);

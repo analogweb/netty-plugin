@@ -1,13 +1,12 @@
 package org.analogweb.netty;
 
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.handler.codec.http.FullHttpRequest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 
 import org.analogweb.Headers;
+import org.analogweb.ReadableBuffer;
 import org.analogweb.RequestPath;
 import org.analogweb.core.AbstractRequestContext;
 
@@ -29,8 +28,8 @@ public class FullHttpRequestContext extends AbstractRequestContext {
 	}
 
 	@Override
-	public InputStream getRequestBody() throws IOException {
-		return new ByteBufInputStream(getFullHttpRequest().content());
+	public ReadableBuffer getRequestBody() throws IOException {
+		return ByteBufReadableBuffer.readBuffer(getFullHttpRequest().content());
 	}
 
 	@Override
