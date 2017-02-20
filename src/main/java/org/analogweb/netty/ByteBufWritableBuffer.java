@@ -2,7 +2,9 @@ package org.analogweb.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import org.analogweb.ReadableBuffer;
 import org.analogweb.WritableBuffer;
+import org.analogweb.util.IOUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,5 +73,15 @@ public class ByteBufWritableBuffer implements WritableBuffer {
 
             }
         };
+    }
+
+    @Override
+    public WritableBuffer from(ReadableBuffer readable) throws IOException {
+        if(readable instanceof  ByteBufReadableBuffer){
+            ((ByteBufReadableBuffer)readable).getByteBuf().readBytes(getByteBuf());
+        } else {
+            IOUtils.copy(readable.asChannel(),asChannel());
+        }
+        return this;
     }
 }
