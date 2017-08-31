@@ -23,86 +23,86 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 @Route("/")
 public class IntegrationTest {
 
-	private static Server server;
+    private static Server server;
 
-	@Route
-	@Get
-	public String hello() {
-		return "Hello, World.";
-	}
+    @Route
+    @Get
+    public String hello() {
+        return "Hello, World.";
+    }
 
-	@Route
-	@Get
-	public String exception() {
-		throw new IllegalStateException();
-	}
+    @Route
+    @Get
+    public String exception() {
+        throw new IllegalStateException();
+    }
 
-	@BeforeClass
-	public static void oneTimeSetUp() throws Exception {
-		final ExecutorService es = Executors.newFixedThreadPool(1);
-		es.submit(new Runnable() {
+    @BeforeClass
+    public static void oneTimeSetUp() throws Exception {
+        final ExecutorService es = Executors.newFixedThreadPool(1);
+        es.submit(new Runnable() {
 
-			@Override
-			public void run() {
-				server = new ServerFactoryImpl().create(URI
-						.create("http://localhost:58765/"),
-						DefaultApplicationProperties.defaultProperties(),
-						DefaultApplicationContext.context(Maps
-								.<String, Object> newEmptyHashMap()),
-						new WebApplication());
-				server.run();
-			}
-		});
-		Thread.sleep(2000);
-	}
+            @Override
+            public void run() {
+                server = new ServerFactoryImpl().create(URI
+                                .create("http://0.0.0.0:58765/"),
+                        DefaultApplicationProperties.defaultProperties(),
+                        DefaultApplicationContext.context(Maps
+                                .<String, Object>newEmptyHashMap()),
+                        new WebApplication());
+                server.run();
+            }
+        });
+        Thread.sleep(2000);
+    }
 
-	@AfterClass
-	public static void oneTimeTearDown() {
-		server.shutdown(0);
-	}
+    @AfterClass
+    public static void oneTimeTearDown() {
+        server.shutdown(0);
+    }
 
-	@Test
-	public void testOk() throws Exception {
-		final AsyncHttpClient cli = new AsyncHttpClient();
-		try {
-			final Response r = cli.prepareGet("http://localhost:58765/hello")
-					.execute().get();
-			assertThat(r.getStatusCode(), is(200));
-			assertThat(r.getResponseBody(), is("Hello, World."));
-		} finally {
-			cli.close();
-		}
-	}
+    @Test
+    public void testOk() throws Exception {
+        final AsyncHttpClient cli = new AsyncHttpClient();
+        try {
+            final Response r = cli.prepareGet("http://0.0.0.0:58765/hello")
+                    .execute().get();
+            assertThat(r.getStatusCode(), is(200));
+            assertThat(r.getResponseBody(), is("Hello, World."));
+        } finally {
+            cli.close();
+        }
+    }
 
-	@Test
-	public void testNotFound() throws Exception {
-		final AsyncHttpClient cli = new AsyncHttpClient();
-		try {
-			final Response r = cli
-					.prepareGet("http://localhost:58765/notfound").execute()
-					.get();
-			assertThat(r.getStatusCode(), is(404));
-		} finally {
-			cli.close();
-		}
-	}
+    @Test
+    public void testNotFound() throws Exception {
+        final AsyncHttpClient cli = new AsyncHttpClient();
+        try {
+            final Response r = cli
+                    .prepareGet("http://0.0.0.0:58765/notfound").execute()
+                    .get();
+            assertThat(r.getStatusCode(), is(404));
+        } finally {
+            cli.close();
+        }
+    }
 
-	@Test
-	public void testServerError() throws Exception {
-		final AsyncHttpClient cli = new AsyncHttpClient();
-		try {
-			final Response r = cli
-					.prepareGet("http://localhost:58765/exception").execute()
-					.get();
-			assertThat(r.getStatusCode(), is(500));
-		} finally {
-			cli.close();
-		}
-	}
+    @Test
+    public void testServerError() throws Exception {
+        final AsyncHttpClient cli = new AsyncHttpClient();
+        try {
+            final Response r = cli
+                    .prepareGet("http://0.0.0.0:58765/exception").execute()
+                    .get();
+            assertThat(r.getStatusCode(), is(500));
+        } finally {
+            cli.close();
+        }
+    }
 
 }
