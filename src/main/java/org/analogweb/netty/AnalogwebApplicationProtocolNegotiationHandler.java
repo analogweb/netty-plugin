@@ -40,9 +40,11 @@ public class AnalogwebApplicationProtocolNegotiationHandler
                     .propagateSettings(true).validateHttpHeaders(false)
                     .maxContentLength(MAX_CONTENT_LENGTH).build();
 
-            ctx.pipeline().addLast(new HttpToHttp2ConnectionHandlerBuilder()
+            ctx.pipeline().addLast(
+                new HttpToHttp2ConnectionHandlerBuilder()
                     .frameListener(listener)
-                    .connection(connection).build());
+                    .connection(connection).build()
+            );
 
             ctx.pipeline().addLast(new AnalogwebChannelInboundHandler(app, properties));
             return;
@@ -51,7 +53,7 @@ public class AnalogwebApplicationProtocolNegotiationHandler
         if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
             ctx.pipeline().addLast(
                     new HttpServerCodec(),
-                    new HttpObjectAggregator(DEFAULT_AGGREGATION_SIZE),
+                    new HttpObjectAggregator(Properties.getMaxAggregationSize(properties)),
                     new AnalogwebChannelInboundHandler(getApplication(),
                             getApplicationProperties()));
             return;
