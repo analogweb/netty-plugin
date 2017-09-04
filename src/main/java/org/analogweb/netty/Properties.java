@@ -4,7 +4,6 @@ import java.io.File;
 
 import io.netty.handler.ssl.SslContext;
 import org.analogweb.ApplicationProperties;
-import org.analogweb.ServerFactoryImpl;
 import org.analogweb.util.StringUtils;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
@@ -14,10 +13,12 @@ public class Properties {
     private static final Log log = Logs
             .getLog(Properties.class);
     private static final int DEFAULT_AGGREGATION_SIZE = 10485760;
+    private static final int DEFAULT_MAX_CONTENT_LENGTH = 1024 * 100;
     private static final int DEFAULT_PARALLELISM = Runtime.getRuntime()
             .availableProcessors();
     private static final String SCHEDULE_TIMEOUT_LIMIT_KEY = "analogweb.netty.schedule-timeout-limit";
     private static final String MAX_AGGREGATION_SIZE_KEY = "analogweb.netty.max-aggregation-size";
+    private static final String MAX_CONTENT_LENGTH_KEY = "analogweb.netty.max-content-length";
     private static final String EXECUTOR_PARALLELISM_KEY = "analogweb.netty.parallelism";
     private static final String SSL_KEY = "analogweb.netty.ssl";
     private static final String SSL_CONTEXT_KEY = "analogweb.netty.ssl.context";
@@ -80,7 +81,11 @@ public class Properties {
 
     public static int getScheduleTimeoutLimit() {
         String limit = System.getProperty(SCHEDULE_TIMEOUT_LIMIT_KEY);
-        return parseInt(limit,SCHEDULE_TIMEOUT_LIMIT_KEY,1);
+        return parseInt(limit, SCHEDULE_TIMEOUT_LIMIT_KEY, 1);
     }
 
+    public static int getMaxContentLength() {
+        String limit = System.getProperty(MAX_CONTENT_LENGTH_KEY);
+        return parseInt(limit, MAX_CONTENT_LENGTH_KEY, DEFAULT_MAX_CONTENT_LENGTH);
+    }
 }

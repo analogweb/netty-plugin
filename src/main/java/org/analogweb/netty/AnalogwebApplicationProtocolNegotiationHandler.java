@@ -20,9 +20,6 @@ public class AnalogwebApplicationProtocolNegotiationHandler
         ApplicationProtocolNegotiationHandler {
     private final Application app;
     private final ApplicationProperties properties;
-    private static final int MAX_CONTENT_LENGTH = 1024 * 100;
-    // TODO Wrap ApplicationProperties.
-    protected static final int DEFAULT_AGGREGATION_SIZE = 10485760;
 
     protected AnalogwebApplicationProtocolNegotiationHandler(Application app,
                                                              ApplicationProperties props) {
@@ -38,12 +35,12 @@ public class AnalogwebApplicationProtocolNegotiationHandler
             DefaultHttp2Connection connection = new DefaultHttp2Connection(true);
             InboundHttp2ToHttpAdapter listener = new InboundHttp2ToHttpAdapterBuilder(connection)
                     .propagateSettings(true).validateHttpHeaders(false)
-                    .maxContentLength(MAX_CONTENT_LENGTH).build();
+                    .maxContentLength(Properties.getMaxContentLength()).build();
 
             ctx.pipeline().addLast(
-                new HttpToHttp2ConnectionHandlerBuilder()
-                    .frameListener(listener)
-                    .connection(connection).build()
+                    new HttpToHttp2ConnectionHandlerBuilder()
+                            .frameListener(listener)
+                            .connection(connection).build()
             );
 
             ctx.pipeline().addLast(new AnalogwebChannelInboundHandler(app, properties));
@@ -59,7 +56,7 @@ public class AnalogwebApplicationProtocolNegotiationHandler
             return;
         }
 
-        throw new IllegalStateException("unknown protocol: " + protocol);
+        throw new IllegalStateException("Unknown protocol: " + protocol);
     }
 
     protected Application getApplication() {
