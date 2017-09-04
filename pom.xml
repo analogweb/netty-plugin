@@ -16,65 +16,68 @@
 	ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 	DEALINGS IN THE SOFTWARE. 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.analogweb</groupId>
-	<artifactId>analogweb-netty</artifactId>
-	<version>0.10.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-	<name>analogweb-netty</name>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<netty.version>4.1.15.Final</netty.version>
-		<analogweb.version>0.10.1-SNAPSHOT</analogweb.version>
-	</properties>
-	<scm>
-		<url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
-		<connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-	<parent>
-		<groupId>org.analogweb</groupId>
-		<artifactId>analogweb-parent-modules</artifactId>
-		<version>14</version>
-		<relativePath />
-	</parent>
-	<dependencies>
-		<dependency>
-			<groupId>org.analogweb</groupId>
-			<artifactId>analogweb-core</artifactId>
-			<version>${analogweb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-http</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-http2</artifactId>
-			<version>${netty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.ning</groupId>
-			<artifactId>async-http-client</artifactId>
-			<version>1.9.40</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.analogweb</groupId>
+    <artifactId>analogweb-netty</artifactId>
+    <version>0.10.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>analogweb-netty</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netty.version>4.1.15.Final</netty.version>
+        <analogweb.version>0.10.1-SNAPSHOT</analogweb.version>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+    <scm>
+        <url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
+        <connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <parent>
+        <groupId>org.analogweb</groupId>
+        <artifactId>analogweb-parent-modules</artifactId>
+        <version>14</version>
+        <relativePath/>
+    </parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.analogweb</groupId>
+            <artifactId>analogweb-core</artifactId>
+            <version>${analogweb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ning</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>1.9.40</version>
             <!--
 			<exclusions>
 				<exclusion>
@@ -83,7 +86,7 @@
 				</exclusion>
 			</exclusions>
             -->
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

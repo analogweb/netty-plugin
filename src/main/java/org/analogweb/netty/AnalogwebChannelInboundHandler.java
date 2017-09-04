@@ -113,8 +113,8 @@ public class AnalogwebChannelInboundHandler
                 req.method().name());
     }
 
-    private void sendHttpResponse(ChannelHandlerContext ctx,
-                                  FullHttpRequest req, FullHttpResponse res) {
+    private void sendHttpResponse(final ChannelHandlerContext ctx,
+                                  final FullHttpRequest req, final FullHttpResponse res) {
         HttpUtil.setContentLength(res, res.content().readableBytes());
         String streamId =
                 req.headers().get(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text());
