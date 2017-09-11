@@ -80,6 +80,7 @@ public class AnalogwebChannelInitializer
                 );
                 return SslContextBuilder
                         .forServer(certificate, privateKey, passPhrase)
+                        .sslProvider(Properties.isOpenSSL() ? SslProvider.OPENSSL : SslProvider.JDK)
                         .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
                         .applicationProtocolConfig(protocols)
                         .build();

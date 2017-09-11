@@ -21,6 +21,7 @@ public class Properties {
     private static final String MAX_CONTENT_LENGTH_KEY = "analogweb.netty.max-content-length";
     private static final String EXECUTOR_PARALLELISM_KEY = "analogweb.netty.parallelism";
     private static final String SSL_KEY = "analogweb.netty.ssl";
+    private static final String OPENSSL_KEY = "analogweb.netty.openssl";
     private static final String SSL_CONTEXT_KEY = "analogweb.netty.ssl.context";
     private static final String SSL_PRIVATE_KEY_KEY = "analogweb.netty.ssl.private-key";
     private static final String SSL_CERTIFICATE_KEY = "analogweb.netty.ssl.certificate";
@@ -49,7 +50,11 @@ public class Properties {
     }
 
     public static boolean isSSL() {
-        return System.getProperty(SSL_KEY) != null;
+        return System.getProperty(SSL_KEY) != null || isOpenSSL();
+    }
+
+    public static boolean isOpenSSL() {
+        return System.getProperty(OPENSSL_KEY) != null;
     }
 
     public static int getExecutorParallelism() {
