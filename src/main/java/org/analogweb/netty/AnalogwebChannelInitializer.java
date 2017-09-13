@@ -71,19 +71,20 @@ public class AnalogwebChannelInitializer
                     certificate = ssc.certificate();
                     passPhrase = null;
                 }
-                ApplicationProtocolConfig protocols = new ApplicationProtocolConfig(
-                        Protocol.ALPN,
-                        SelectorFailureBehavior.NO_ADVERTISE,
-                        SelectedListenerFailureBehavior.ACCEPT,
-                        ApplicationProtocolNames.HTTP_2,
-                        ApplicationProtocolNames.HTTP_1_1
-                );
-                return SslContextBuilder
+                SslContextBuilder building = SslContextBuilder
                         .forServer(certificate, privateKey, passPhrase)
                         .sslProvider(Properties.isOpenSSL() ? SslProvider.OPENSSL : SslProvider.JDK)
-                        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
-                        .applicationProtocolConfig(protocols)
-                        .build();
+                        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE);
+                if (Properties.isHTTP2()) {
+                    building.applicationProtocolConfig(new ApplicationProtocolConfig(
+                            Protocol.ALPN,
+                            SelectorFailureBehavior.NO_ADVERTISE,
+                            SelectedListenerFailureBehavior.ACCEPT,
+                            ApplicationProtocolNames.HTTP_2,
+                            ApplicationProtocolNames.HTTP_1_1
+                    ));
+                }
+                return building.build();
             } catch (final SSLException e) {
                 throw new ApplicationRuntimeException(e) {
                     private static final long serialVersionUID = 1L;

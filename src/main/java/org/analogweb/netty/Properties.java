@@ -20,6 +20,7 @@ public class Properties {
     private static final String MAX_AGGREGATION_SIZE_KEY = "analogweb.netty.max-aggregation-size";
     private static final String MAX_CONTENT_LENGTH_KEY = "analogweb.netty.max-content-length";
     private static final String EXECUTOR_PARALLELISM_KEY = "analogweb.netty.parallelism";
+    private static final String HTTP2_KEY = "analogweb.netty.http2";
     private static final String SSL_KEY = "analogweb.netty.ssl";
     private static final String OPENSSL_KEY = "analogweb.netty.openssl";
     private static final String SSL_CONTEXT_KEY = "analogweb.netty.ssl.context";
@@ -47,6 +48,10 @@ public class Properties {
             return parseInt(size, MAX_AGGREGATION_SIZE_KEY, DEFAULT_AGGREGATION_SIZE);
         }
         return DEFAULT_AGGREGATION_SIZE;
+    }
+
+    public static boolean isHTTP2() {
+        return System.getProperty(HTTP2_KEY) != null;
     }
 
     public static boolean isSSL() {

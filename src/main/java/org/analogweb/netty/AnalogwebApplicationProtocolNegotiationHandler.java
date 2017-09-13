@@ -31,7 +31,7 @@ public class AnalogwebApplicationProtocolNegotiationHandler
     @Override
     protected void configurePipeline(ChannelHandlerContext ctx, String protocol)
             throws Exception {
-        if (ApplicationProtocolNames.HTTP_2.equals(protocol)) {
+        if (Properties.isHTTP2() && ApplicationProtocolNames.HTTP_2.equals(protocol)) {
             DefaultHttp2Connection connection = new DefaultHttp2Connection(true);
             InboundHttp2ToHttpAdapter listener = new InboundHttp2ToHttpAdapterBuilder(connection)
                     .propagateSettings(true).validateHttpHeaders(false)
