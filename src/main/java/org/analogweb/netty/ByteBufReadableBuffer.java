@@ -16,7 +16,9 @@ import java.nio.charset.Charset;
  * @author y2k2mt
  */
 public class ByteBufReadableBuffer implements ReadableBuffer{
+
     private ByteBuf byteBuf;
+    private long contentLength = 0;
 
     public static ByteBufReadableBuffer readBuffer(ByteBuf byteBuf) {
         return new ByteBufReadableBuffer(byteBuf);
@@ -33,18 +35,23 @@ public class ByteBufReadableBuffer implements ReadableBuffer{
     @Override
     public ReadableBuffer read(byte[] dst, int index, int length) throws IOException {
         getByteBuf().readBytes(dst,index,length);
+        this.contentLength += length - index;
         return this;
     }
 
     @Override
     public ReadableBuffer read(ByteBuffer buffer) throws IOException {
-        getByteBuf().readBytes(buffer);
+        ByteBuf b = getByteBuf();
+        b.readBytes(buffer);
+        this.contentLength += buffer.remaining();
         return this;
     }
 
     @Override
     public String asString(Charset charset) throws IOException {
-        return new String(getByteBuf().array(),charset);
+        ByteBuf b = getByteBuf();
+        this.contentLength = b.readableBytes() - b.readerIndex();
+        return getByteBuf().toString(charset);
     }
 
     @Override
@@ -58,7 +65,7 @@ public class ByteBufReadableBuffer implements ReadableBuffer{
 
             @Override
             public boolean isOpen() {
-                return true;
+                return getByteBuf().isReadable();
             }
 
             @Override
@@ -67,24 +74,27 @@ public class ByteBufReadableBuffer implements ReadableBuffer{
 
             @Override
             public int read(ByteBuffer dst) throws IOException {
+                int length = dst.remaining();
                 getByteBuf().readBytes(dst);
-                return getByteBuf().arrayOffset();
+                return length;
             }
         };
     }
 
     @Override
     public ReadableBuffer to(WritableBuffer writable) throws IOException {
+        ByteBuf b = getByteBuf();
         if(writable instanceof  ByteBufWritableBuffer){
-            ((ByteBufWritableBuffer)writable).getByteBuf().writeBytes(getByteBuf());
+            ((ByteBufWritableBuffer)writable).getByteBuf().writeBytes(b);
         } else {
             IOUtils.copy(asChannel(),writable.asChannel());
         }
+        this.contentLength = b.readableBytes() - b.readerIndex();
         return this;
     }
 
     @Override
     public long getLength() {
-        return getByteBuf().arrayOffset();
+        return this.contentLength;
     }
 }
