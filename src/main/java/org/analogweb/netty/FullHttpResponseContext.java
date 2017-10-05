@@ -10,6 +10,11 @@ import io.netty.handler.codec.http.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.netty.handler.codec.http2.HttpConversionUtil;
 import org.analogweb.*;
@@ -17,6 +22,7 @@ import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.MapHeaders;
 import org.analogweb.util.StringUtils;
+import org.analogweb.util.Version;
 
 /**
  * @author y2k2mt
@@ -63,11 +69,12 @@ public class FullHttpResponseContext extends AbstractResponseContext {
                 response.headers()
                         .set("Content-Length", buffer.readableBytes());
             }
-            final HttpHeaders headers = response.headers();
+            final HttpHeaders headers = serverHeader(dateHeader(response.headers()));
             final Headers analogHeaders = getResponseHeaders();
             for (final String headerName : analogHeaders.getNames()) {
                 headers.set(headerName, analogHeaders.getValues(headerName));
             }
+
             final Channel channel = getChannelHandlerContext().channel();
             final ChannelFuture future = channel.writeAndFlush(response);
             if (close) {
@@ -79,6 +86,26 @@ public class FullHttpResponseContext extends AbstractResponseContext {
                 private static final long serialVersionUID = 1L;
             };
         }
+    }
+
+    private HttpHeaders serverHeader(HttpHeaders headers) {
+        List<Version> vs = Version.load(Thread.currentThread().getContextClassLoader());
+        String v = "";
+        if(!vs.isEmpty()){
+            v = new StringBuilder().append("/").append(vs.get(0).getVersion()).toString();
+        }
+        return headers.add(
+                "Server"
+                ,new StringBuilder().append("analogweb").append(v).toString());
+    }
+
+    private HttpHeaders dateHeader(HttpHeaders headers) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return headers.add(
+                "Date",
+                dateFormat.format(Calendar.getInstance().getTime()));
     }
 
     @Override
