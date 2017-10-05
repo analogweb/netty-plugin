@@ -1,68 +1,67 @@
 package org.analogweb.netty;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import org.analogweb.Headers;
-import org.analogweb.RequestContext;
-import org.analogweb.Response;
-import org.analogweb.ResponseEntity;
+import io.netty.handler.codec.http2.HttpConversionUtil;
+import org.analogweb.*;
 import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.MapHeaders;
+import org.analogweb.util.StringUtils;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 public class FullHttpResponseContext extends AbstractResponseContext {
 
-    protected static long NO_CONTENT = -1;
-    protected static long CHUNKED = 0;
     private final FullHttpRequest exc;
     private int status = HttpURLConnection.HTTP_OK;
     private final Headers headers;
     private final ChannelHandlerContext context;
 
-    public FullHttpResponseContext(FullHttpRequest request, ChannelHandlerContext context) {
+    public FullHttpResponseContext(FullHttpRequest request,
+                                   ChannelHandlerContext context) {
         this.exc = request;
         this.headers = new MapHeaders();
         this.context = context;
     }
 
     @Override
-    public void commit(RequestContext context, Response r){
+    public void commit(RequestContext context, Response r) {
         try {
             final ResponseEntity entity = r.getEntity();
             final ByteBuf buffer = Unpooled.buffer();
-            final ByteBufOutputStream out = new ByteBufOutputStream(buffer);
+            final WritableBuffer out = ByteBufWritableBuffer.writeBuffer(buffer);
             if (entity != null) {
                 entity.writeInto(out);
             }
-            out.flush();
-            final FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            final FullHttpResponse response = new DefaultFullHttpResponse(
+                    HttpVersion.HTTP_1_1,
                     HttpResponseStatus.valueOf(getStatus()), buffer);
+            HttpUtil.setContentLength(response, response.content().readableBytes());
             final FullHttpRequest request = getFullHttpRequest();
-            final boolean close = request.headers()
-                    .contains("Connection", HttpHeaders.Values.CLOSE, true)
-                    || request.getProtocolVersion().equals(HttpVersion.HTTP_1_0)
-                    && !request.headers().contains("Connection", HttpHeaders.Values.KEEP_ALIVE,
-                            true);
+            String streamId =
+                    request.headers().get(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text());
+            if (StringUtils.isNotEmpty(streamId)) {
+                response.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
+            }
+            final boolean close = request.headers().contains("Connection",
+                    HttpHeaderValues.CLOSE, true)
+                    || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
+                    && !request.headers().contains("Connection",
+                    HttpHeaderValues.KEEP_ALIVE, true);
             if (!close) {
-                response.headers().set("Content-Length", buffer.readableBytes());
+                response.headers()
+                        .set("Content-Length", buffer.readableBytes());
             }
             final HttpHeaders headers = response.headers();
             final Headers analogHeaders = getResponseHeaders();

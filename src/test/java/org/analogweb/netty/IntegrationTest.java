@@ -23,7 +23,7 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
 @Route("/")
 public class IntegrationTest {
@@ -49,9 +49,11 @@ public class IntegrationTest {
 
             @Override
             public void run() {
-                server = new ServerFactoryImpl().create(URI.create("http://localhost:18765/"),
+                server = new ServerFactoryImpl().create(URI
+                                .create("http://0.0.0.0:58765/"),
                         DefaultApplicationProperties.defaultProperties(),
-                        DefaultApplicationContext.context(Maps.<String, Object> newEmptyHashMap()),
+                        DefaultApplicationContext.context(Maps
+                                .<String, Object>newEmptyHashMap()),
                         new WebApplication());
                 server.run();
             }
@@ -68,7 +70,8 @@ public class IntegrationTest {
     public void testOk() throws Exception {
         final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            final Response r = cli.prepareGet("http://localhost:18765/hello").execute().get();
+            final Response r = cli.prepareGet("http://0.0.0.0:58765/hello")
+                    .execute().get();
             assertThat(r.getStatusCode(), is(200));
             assertThat(r.getResponseBody(), is("Hello, World."));
         } finally {
@@ -80,7 +83,9 @@ public class IntegrationTest {
     public void testNotFound() throws Exception {
         final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            final Response r = cli.prepareGet("http://localhost:18765/notfound").execute().get();
+            final Response r = cli
+                    .prepareGet("http://0.0.0.0:58765/notfound").execute()
+                    .get();
             assertThat(r.getStatusCode(), is(404));
         } finally {
             cli.close();
@@ -91,10 +96,13 @@ public class IntegrationTest {
     public void testServerError() throws Exception {
         final AsyncHttpClient cli = new AsyncHttpClient();
         try {
-            final Response r = cli.prepareGet("http://localhost:18765/exception").execute().get();
+            final Response r = cli
+                    .prepareGet("http://0.0.0.0:58765/exception").execute()
+                    .get();
             assertThat(r.getStatusCode(), is(500));
         } finally {
             cli.close();
         }
     }
+
 }

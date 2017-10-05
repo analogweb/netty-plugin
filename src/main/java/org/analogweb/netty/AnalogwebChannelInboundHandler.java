@@ -1,48 +1,55 @@
 package org.analogweb.netty;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http2.HttpConversionUtil;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import org.analogweb.Application;
 import org.analogweb.ApplicationProperties;
 import org.analogweb.RequestContext;
 import org.analogweb.RequestPath;
-import org.analogweb.ResponseContext;
 import org.analogweb.Response;
+import org.analogweb.ResponseContext;
+import org.analogweb.ServerFactoryImpl;
 import org.analogweb.core.DefaultRequestPath;
+import org.analogweb.util.StringUtils;
+import org.analogweb.util.logging.Log;
+import org.analogweb.util.logging.Logs;
 
 /**
- * @author snowgooseyk
+ * @author y2k2mt
  */
-public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<Object> {
+public class AnalogwebChannelInboundHandler
+        extends
+        SimpleChannelInboundHandler<FullHttpRequest> {
 
+    private static final Log log = Logs
+            .getLog(AnalogwebChannelInboundHandler.class);
     private final Application application;
     private final ApplicationProperties properties;
 
-    public AnalogwebChannelInboundHandler(Application application, ApplicationProperties properties) {
+    public AnalogwebChannelInboundHandler(Application application,
+                                          ApplicationProperties properties) {
         this.application = application;
         this.properties = properties;
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        handleHttpRequest(ctx, (FullHttpRequest) msg);
+    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
+            throws Exception {
+        handleHttpRequest(ctx, msg);
     }
 
     @Override
@@ -50,37 +57,47 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
         ctx.flush();
     }
 
-    private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
+    private void handleHttpRequest(ChannelHandlerContext ctx,
+                                   FullHttpRequest req) {
         // Handle a bad request.
-        if (!req.getDecoderResult().isSuccess()) {
-            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
+        if (!req.decoderResult().isSuccess()) {
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1,
+                    BAD_REQUEST));
             return;
         }
         final RequestContext rcontext = createRequestContext(req);
         final ResponseContext response = createResponseContext(req, ctx);
         try {
-            final Response proceed = getApplication().processRequest(rcontext.getRequestPath(), rcontext,
-                    response);
+            final Response proceed = getApplication().processRequest(
+                    rcontext.getRequestPath(), rcontext, response);
             if (proceed == Application.NOT_FOUND) {
-                final FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
+                final FullHttpResponse res = new DefaultFullHttpResponse(
+                        HTTP_1_1, NOT_FOUND);
                 sendHttpResponse(ctx, req, res);
                 return;
             }
-            proceed.commit(rcontext,response);
+            ctx.executor().schedule(new Runnable() {
+                @Override
+                public void run() {
+                    proceed.commit(rcontext, response);
+                }
+            }, Properties.getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
         } catch (final Exception e) {
-            e.printStackTrace();
-            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR));
+            log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE, "ENT000001", e);
+            sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1,
+                    INTERNAL_SERVER_ERROR));
             ctx.close();
         }
     }
 
-    protected ResponseContext createResponseContext(FullHttpRequest req, ChannelHandlerContext ctx) {
+    protected ResponseContext createResponseContext(FullHttpRequest req,
+                                                    ChannelHandlerContext ctx) {
         return new FullHttpResponseContext(req, ctx);
     }
 
     protected RequestContext createRequestContext(FullHttpRequest req) {
-        return new FullHttpRequestContext(req, resolveRequestPath(req), getApplicationProperties()
-                .getDefaultClientLocale());
+        return new FullHttpRequestContext(req, resolveRequestPath(req),
+                getApplicationProperties().getDefaultClientLocale());
     }
 
     protected Application getApplication() {
@@ -92,24 +109,25 @@ public class AnalogwebChannelInboundHandler extends SimpleChannelInboundHandler<
     }
 
     protected RequestPath resolveRequestPath(FullHttpRequest req) {
-        return new DefaultRequestPath(URI.create("/"), URI.create(req.getUri()), req.getMethod()
-                .name());
+        return new DefaultRequestPath(URI.create("/"), URI.create(req.uri()),
+                req.method().name());
     }
 
-    private static void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest req,
-            FullHttpResponse res) {
+    private void sendHttpResponse(final ChannelHandlerContext ctx,
+                                  final FullHttpRequest req, final FullHttpResponse res) {
+        HttpUtil.setContentLength(res, res.content().readableBytes());
+        String streamId =
+                req.headers().get(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text());
+        if (StringUtils.isNotEmpty(streamId)) {
+            res.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
+        }
         // Generate an error page if response getStatus code is not OK (200).
-        if (res.getStatus().code() != 200) {
-            final ByteBuf buf = Unpooled.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8);
-            res.content().writeBytes(buf);
-            buf.release();
-            setContentLength(res, res.content().readableBytes());
-        }
-        // Send the response and close the connection if necessary.
-        final ChannelFuture f = ctx.channel().writeAndFlush(res);
-        if (!isKeepAlive(req) || res.getStatus().code() != 200) {
-            f.addListener(ChannelFutureListener.CLOSE);
-        }
+        ctx.executor().schedule(new Runnable() {
+            @Override
+            public void run() {
+                ctx.writeAndFlush(res);
+            }
+        }, Properties.getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
     }
 
     @Override
