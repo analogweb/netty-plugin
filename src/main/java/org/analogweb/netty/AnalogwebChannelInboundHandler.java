@@ -7,13 +7,15 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http2.HttpConversionUtil;
 
 import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.analogweb.Application;
@@ -25,6 +27,7 @@ import org.analogweb.ResponseContext;
 import org.analogweb.ServerFactoryImpl;
 import org.analogweb.core.DefaultRequestPath;
 import org.analogweb.util.StringUtils;
+import org.analogweb.util.Version;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
 
@@ -121,6 +124,8 @@ public class AnalogwebChannelInboundHandler
         if (StringUtils.isNotEmpty(streamId)) {
             res.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
         }
+        setServerHeader(res);
+        setDateHeader(res);
         // Generate an error page if response getStatus code is not OK (200).
         ctx.executor().schedule(new Runnable() {
             @Override
@@ -129,6 +134,27 @@ public class AnalogwebChannelInboundHandler
             }
         }, Properties.getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
     }
+
+    private void setServerHeader(HttpResponse res) {
+        List<Version> vs = Version.load(Thread.currentThread().getContextClassLoader());
+        String v = "";
+        if(!vs.isEmpty()){
+            v = new StringBuilder().append("/").append(vs.get(0).getVersion()).toString();
+        }
+        res.headers().set(
+                "Server"
+                ,new StringBuilder().append("analogweb").append(v).toString());
+    }
+
+    private void setDateHeader(HttpResponse res) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        res.headers().set(
+                "Date",
+                dateFormat.format(Calendar.getInstance().getTime()));
+    }
+
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
