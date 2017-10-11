@@ -45,8 +45,9 @@ public class AnalogwebChannelInitializer
     private final SslContext sslCtx;
     private final Application app;
     private final ApplicationProperties properties;
+    private final Properties props = Properties.instance();
     private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
-            Properties.getExecutorParallelism());
+            props.getExecutorParallelism());
 
     public AnalogwebChannelInitializer(SslContext ssl, Application app,
                                        ApplicationContext contextResolver, ApplicationProperties props) {
@@ -59,11 +60,11 @@ public class AnalogwebChannelInitializer
     }
 
     protected SslContext resolveSslContext() {
-        if (Properties.isSSL()) {
+        if (props.isSSL()) {
             try {
-                File privateKey = Properties.getSSLPrivateKey(getApplicationProperties());
-                File certificate = Properties.getSSLCertificate(getApplicationProperties());
-                String passPhrase = Properties.getSSLKeyPassPhrase(getApplicationProperties());
+                File privateKey = props.getSSLPrivateKey(getApplicationProperties());
+                File certificate = props.getSSLCertificate(getApplicationProperties());
+                String passPhrase = props.getSSLKeyPassPhrase(getApplicationProperties());
                 if (privateKey == null || certificate == null) {
                     log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE, "WNT000002");
                     final SelfSignedCertificate ssc = new SelfSignedCertificate();
@@ -73,9 +74,9 @@ public class AnalogwebChannelInitializer
                 }
                 SslContextBuilder building = SslContextBuilder
                         .forServer(certificate, privateKey, passPhrase)
-                        .sslProvider(Properties.isOpenSSL() ? SslProvider.OPENSSL : SslProvider.JDK)
+                        .sslProvider(props.isOpenSSL() ? SslProvider.OPENSSL : SslProvider.JDK)
                         .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE);
-                if (Properties.isHTTP2()) {
+                if (props.isHTTP2()) {
                     building.applicationProtocolConfig(new ApplicationProtocolConfig(
                             Protocol.ALPN,
                             SelectorFailureBehavior.NO_ADVERTISE,
@@ -121,7 +122,7 @@ public class AnalogwebChannelInitializer
         final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(
-                Properties.getMaxAggregationSize(getApplicationProperties())));
+                Properties.instance().getMaxAggregationSize(getApplicationProperties())));
         pipeline.addLast(getHandlerSpecificExecutorGroup(),
                 createServerHandler());
     }

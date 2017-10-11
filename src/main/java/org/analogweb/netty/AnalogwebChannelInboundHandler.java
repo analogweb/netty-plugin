@@ -13,7 +13,6 @@ import io.netty.handler.codec.http2.HttpConversionUtil;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +26,6 @@ import org.analogweb.ResponseContext;
 import org.analogweb.ServerFactoryImpl;
 import org.analogweb.core.DefaultRequestPath;
 import org.analogweb.util.StringUtils;
-import org.analogweb.util.Version;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
 
@@ -84,7 +82,7 @@ public class AnalogwebChannelInboundHandler
                 public void run() {
                     proceed.commit(rcontext, response);
                 }
-            }, Properties.getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
+            }, Properties.instance().getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
         } catch (final Exception e) {
             log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE, "ENT000001", e);
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1,
@@ -132,18 +130,13 @@ public class AnalogwebChannelInboundHandler
             public void run() {
                 ctx.writeAndFlush(res);
             }
-        }, Properties.getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
+        }, Properties.instance().getScheduleTimeoutLimit(), TimeUnit.MILLISECONDS);
     }
 
     private void setServerHeader(HttpResponse res) {
-        List<Version> vs = Version.load(Thread.currentThread().getContextClassLoader());
-        String v = "";
-        if(!vs.isEmpty()){
-            v = new StringBuilder().append("/").append(vs.get(0).getVersion()).toString();
-        }
         res.headers().set(
                 "Server"
-                ,new StringBuilder().append("analogweb").append(v).toString());
+                , new StringBuilder().append("analogweb").append(Properties.instance().getVersion()).toString());
     }
 
     private void setDateHeader(HttpResponse res) {

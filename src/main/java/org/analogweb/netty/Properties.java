@@ -1,10 +1,12 @@
 package org.analogweb.netty;
 
 import java.io.File;
+import java.util.List;
 
 import io.netty.handler.ssl.SslContext;
 import org.analogweb.ApplicationProperties;
 import org.analogweb.util.StringUtils;
+import org.analogweb.util.Version;
 import org.analogweb.util.logging.Log;
 import org.analogweb.util.logging.Logs;
 
@@ -28,46 +30,80 @@ public class Properties {
     private static final String SSL_CERTIFICATE_KEY = "analogweb.netty.ssl.certificate";
     private static final String SSL_PASSPHRASE_KEY = "analogweb.netty.ssl.passphrase";
 
-    public static SslContext getSslContext(ApplicationProperties props) {
-        Object obj = props.getProperties().get(SSL_CONTEXT_KEY);
-        if (obj instanceof SslContext) {
-            return (SslContext) obj;
-        } else {
-            return null;
+    private static Properties instance;
+
+    private SslContext sslContext;
+    private boolean sslContextInitialized;
+    private int maxAggregationSize = Integer.MIN_VALUE;
+    private int executorParallelism = Integer.MIN_VALUE;
+    private File sSLPrivateKey;
+    private boolean sSLPrivateKeyInitialized;
+    private File sSLCertificate;
+    private boolean sSlCertificateInitialized;
+    private int scheduleTimeoutLimit = Integer.MIN_VALUE;
+    private int maxContentLength = Integer.MIN_VALUE;
+    private String version;
+
+    public static Properties instance() {
+        if (instance == null) {
+            instance = new Properties();
         }
+        return instance;
     }
 
-    public static int getMaxAggregationSize(
+    private Properties() {
+    }
+
+    public SslContext getSslContext(ApplicationProperties props) {
+        if (!sslContextInitialized) {
+            Object obj = props.getProperties().get(SSL_CONTEXT_KEY);
+            if (obj instanceof SslContext) {
+                this.sslContext = (SslContext) obj;
+            } else {
+                this.sslContext = null;
+            }
+            sslContextInitialized = true;
+        }
+        return sslContext;
+    }
+
+    public int getMaxAggregationSize(
             ApplicationProperties applicationProperties) {
-        String size = System.getProperty(MAX_AGGREGATION_SIZE_KEY);
-        if (StringUtils.isEmpty(size)) {
-            size = applicationProperties
-                    .getStringProperty(MAX_AGGREGATION_SIZE_KEY);
+        if (maxAggregationSize == Integer.MIN_VALUE) {
+            String size = System.getProperty(MAX_AGGREGATION_SIZE_KEY);
+            if (StringUtils.isEmpty(size)) {
+                size = applicationProperties
+                        .getStringProperty(MAX_AGGREGATION_SIZE_KEY);
+            }
+            if (StringUtils.isNotEmpty(size)) {
+                maxAggregationSize = parseInt(size, MAX_AGGREGATION_SIZE_KEY, DEFAULT_AGGREGATION_SIZE);
+            }
+            maxAggregationSize = DEFAULT_AGGREGATION_SIZE;
         }
-        if (StringUtils.isNotEmpty(size)) {
-            return parseInt(size, MAX_AGGREGATION_SIZE_KEY, DEFAULT_AGGREGATION_SIZE);
-        }
-        return DEFAULT_AGGREGATION_SIZE;
+        return maxAggregationSize;
     }
 
-    public static boolean isHTTP2() {
+    public boolean isHTTP2() {
         return System.getProperty(HTTP2_KEY) != null;
     }
 
-    public static boolean isSSL() {
+    public boolean isSSL() {
         return System.getProperty(SSL_KEY) != null || isOpenSSL();
     }
 
-    public static boolean isOpenSSL() {
+    public boolean isOpenSSL() {
         return System.getProperty(OPENSSL_KEY) != null;
     }
 
-    public static int getExecutorParallelism() {
-        String parallelism = System.getProperty(EXECUTOR_PARALLELISM_KEY);
-        return parseInt(parallelism, EXECUTOR_PARALLELISM_KEY, DEFAULT_PARALLELISM);
+    public int getExecutorParallelism() {
+        if (executorParallelism == Integer.MIN_VALUE) {
+            String parallelism = System.getProperty(EXECUTOR_PARALLELISM_KEY);
+            executorParallelism = parseInt(parallelism, EXECUTOR_PARALLELISM_KEY, DEFAULT_PARALLELISM);
+        }
+        return executorParallelism;
     }
 
-    private static int parseInt(String maybeNumber, String key, int defaultValue) {
+    private int parseInt(String maybeNumber, String key, int defaultValue) {
         try {
             return Integer.parseInt(maybeNumber);
         } catch (NumberFormatException e) {
@@ -75,27 +111,54 @@ public class Properties {
         }
     }
 
-    public static File getSSLPrivateKey(ApplicationProperties applicationProperties) {
-        String privateKeyPath = System.getProperty(SSL_PRIVATE_KEY_KEY);
-        return StringUtils.isNotEmpty(privateKeyPath) ? new File(privateKeyPath) : null;
+    public File getSSLPrivateKey(ApplicationProperties applicationProperties) {
+        if (!sSLPrivateKeyInitialized) {
+            String privateKeyPath = System.getProperty(SSL_PRIVATE_KEY_KEY);
+            sSLPrivateKey = StringUtils.isNotEmpty(privateKeyPath) ? new File(privateKeyPath) : null;
+            sSLPrivateKeyInitialized = true;
+        }
+        return sSLPrivateKey;
     }
 
-    public static File getSSLCertificate(ApplicationProperties applicationProperties) {
-        String certificatePath = System.getProperty(SSL_CERTIFICATE_KEY);
-        return StringUtils.isNotEmpty(certificatePath) ? new File(certificatePath) : null;
+    public File getSSLCertificate(ApplicationProperties applicationProperties) {
+        if (!sSlCertificateInitialized) {
+            String certificatePath = System.getProperty(SSL_CERTIFICATE_KEY);
+            sSLCertificate = StringUtils.isNotEmpty(certificatePath) ? new File(certificatePath) : null;
+            sslContextInitialized = true;
+        }
+        return sSLCertificate;
     }
 
     public static String getSSLKeyPassPhrase(ApplicationProperties applicationProperties) {
         return System.getProperty(SSL_PASSPHRASE_KEY);
     }
 
-    public static int getScheduleTimeoutLimit() {
-        String limit = System.getProperty(SCHEDULE_TIMEOUT_LIMIT_KEY);
-        return parseInt(limit, SCHEDULE_TIMEOUT_LIMIT_KEY, 1);
+    public int getScheduleTimeoutLimit() {
+        if (scheduleTimeoutLimit == Integer.MIN_VALUE) {
+            String limit = System.getProperty(SCHEDULE_TIMEOUT_LIMIT_KEY);
+            scheduleTimeoutLimit = parseInt(limit, SCHEDULE_TIMEOUT_LIMIT_KEY, 1);
+        }
+        return scheduleTimeoutLimit;
     }
 
-    public static int getMaxContentLength() {
-        String limit = System.getProperty(MAX_CONTENT_LENGTH_KEY);
-        return parseInt(limit, MAX_CONTENT_LENGTH_KEY, DEFAULT_MAX_CONTENT_LENGTH);
+    public int getMaxContentLength() {
+        if (maxContentLength == Integer.MIN_VALUE) {
+            String limit = System.getProperty(MAX_CONTENT_LENGTH_KEY);
+            maxContentLength = parseInt(limit, MAX_CONTENT_LENGTH_KEY, DEFAULT_MAX_CONTENT_LENGTH);
+        }
+        return maxContentLength;
+    }
+
+    public String getVersion() {
+        if (version == null) {
+            List<Version> vs = Version.load(
+                    Thread.currentThread().getContextClassLoader());
+            if (vs.isEmpty()) {
+                version = "";
+            } else {
+                version = new StringBuilder().append("/").append(vs.get(0).getVersion()).toString();
+            }
+        }
+        return version;
     }
 }

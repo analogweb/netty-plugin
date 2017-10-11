@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -22,7 +21,6 @@ import org.analogweb.core.AbstractResponseContext;
 import org.analogweb.core.ApplicationRuntimeException;
 import org.analogweb.core.MapHeaders;
 import org.analogweb.util.StringUtils;
-import org.analogweb.util.Version;
 
 /**
  * @author y2k2mt
@@ -89,14 +87,9 @@ public class FullHttpResponseContext extends AbstractResponseContext {
     }
 
     private HttpHeaders serverHeader(HttpHeaders headers) {
-        List<Version> vs = Version.load(Thread.currentThread().getContextClassLoader());
-        String v = "";
-        if(!vs.isEmpty()){
-            v = new StringBuilder().append("/").append(vs.get(0).getVersion()).toString();
-        }
         return headers.add(
                 "Server"
-                ,new StringBuilder().append("analogweb").append(v).toString());
+                , new StringBuilder().append("analogweb").append(Properties.instance().getVersion()).toString());
     }
 
     private HttpHeaders dateHeader(HttpHeaders headers) {
