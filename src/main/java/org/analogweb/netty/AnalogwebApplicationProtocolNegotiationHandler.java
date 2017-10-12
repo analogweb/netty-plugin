@@ -31,11 +31,11 @@ public class AnalogwebApplicationProtocolNegotiationHandler
     @Override
     protected void configurePipeline(ChannelHandlerContext ctx, String protocol)
             throws Exception {
-        if (Properties.isHTTP2() && ApplicationProtocolNames.HTTP_2.equals(protocol)) {
+        if (Properties.instance().isHTTP2() && ApplicationProtocolNames.HTTP_2.equals(protocol)) {
             DefaultHttp2Connection connection = new DefaultHttp2Connection(true);
             InboundHttp2ToHttpAdapter listener = new InboundHttp2ToHttpAdapterBuilder(connection)
                     .propagateSettings(true).validateHttpHeaders(false)
-                    .maxContentLength(Properties.getMaxContentLength()).build();
+                    .maxContentLength(Properties.instance().getMaxContentLength()).build();
 
             ctx.pipeline().addLast(
                     new HttpToHttp2ConnectionHandlerBuilder()
@@ -50,7 +50,7 @@ public class AnalogwebApplicationProtocolNegotiationHandler
         if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
             ctx.pipeline().addLast(
                     new HttpServerCodec(),
-                    new HttpObjectAggregator(Properties.getMaxAggregationSize(properties)),
+                    new HttpObjectAggregator(Properties.instance().getMaxAggregationSize(properties)),
                     new AnalogwebChannelInboundHandler(getApplication(),
                             getApplicationProperties()));
             return;

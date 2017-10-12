@@ -5,11 +5,6 @@ import io.netty.util.Version;
 
 import java.net.URI;
 
-import org.analogweb.Application;
-import org.analogweb.ApplicationContext;
-import org.analogweb.ApplicationProperties;
-import org.analogweb.Server;
-import org.analogweb.ServerFactory;
 import org.analogweb.netty.AnalogwebChannelInitializer;
 import org.analogweb.netty.HttpServers;
 import org.analogweb.netty.Properties;
@@ -27,7 +22,7 @@ public class ServerFactoryImpl implements ServerFactory {
     @Override
     public Server create(URI uri, ApplicationProperties properties,
                          ApplicationContext context, Application application) {
-        SslContext ssl = Properties.getSslContext(properties);
+        SslContext ssl = Properties.instance().getSslContext(properties);
         return HttpServers.create(uri, new AnalogwebChannelInitializer(ssl,
                 application, context, properties));
     }
@@ -41,4 +36,5 @@ public class ServerFactoryImpl implements ServerFactory {
                 .append("]");
         return s.toString();
     }
+
 }
