@@ -32,19 +32,19 @@ public class ByteBufWritableBuffer implements WritableBuffer {
 
     @Override
     public WritableBuffer writeBytes(byte[] bytes) throws IOException {
-        getByteBuf().writeBytes(bytes);
+        this.byteBuf = getByteBuf().writeBytes(bytes);
         return this;
     }
 
     @Override
     public WritableBuffer writeBytes(byte[] bytes, int index, int length) throws IOException {
-        getByteBuf().writeBytes(bytes,index,length);
+        this.byteBuf = getByteBuf().writeBytes(bytes,index,length);
         return this;
     }
 
     @Override
     public WritableBuffer writeBytes(ByteBuffer buffer) throws IOException {
-        getByteBuf().writeBytes(buffer);
+        this.byteBuf = getByteBuf().writeBytes(buffer);
         return this;
     }
 

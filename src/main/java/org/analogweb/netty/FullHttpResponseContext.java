@@ -17,9 +17,7 @@ import java.util.TimeZone;
 
 import io.netty.handler.codec.http2.HttpConversionUtil;
 import org.analogweb.*;
-import org.analogweb.core.AbstractResponseContext;
-import org.analogweb.core.ApplicationRuntimeException;
-import org.analogweb.core.MapHeaders;
+import org.analogweb.core.*;
 import org.analogweb.util.StringUtils;
 
 /**
@@ -40,23 +38,25 @@ public class FullHttpResponseContext extends AbstractResponseContext {
     }
 
     @Override
-    public void commit(RequestContext context, Response r) {
+    public void commit(RequestContext context, Response response) {
         try {
-            final ResponseEntity entity = r.getEntity();
+            final ResponseEntity entity = response.getEntity();
             final ByteBuf buffer = Unpooled.buffer();
-            final WritableBuffer out = ByteBufWritableBuffer.writeBuffer(buffer);
-            if (entity != null) {
-                entity.writeInto(out);
+            final WritableBuffer writeBuffer = ByteBufWritableBuffer.writeBuffer(buffer);
+            if (entity instanceof DefaultResponseEntity) {
+                writeBuffer.writeBytes(((DefaultResponseEntity) entity).entity());
+            } else if (entity instanceof ReadableBufferResponseEntity) {
+                ((ReadableBufferResponseEntity) entity).entity().to(writeBuffer);
             }
-            final FullHttpResponse response = new DefaultFullHttpResponse(
+            final FullHttpResponse fullResponse = new DefaultFullHttpResponse(
                     HttpVersion.HTTP_1_1,
                     HttpResponseStatus.valueOf(getStatus()), buffer);
-            HttpUtil.setContentLength(response, response.content().readableBytes());
+            HttpUtil.setContentLength(fullResponse, fullResponse.content().readableBytes());
             final FullHttpRequest request = getFullHttpRequest();
             String streamId =
                     request.headers().get(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text());
             if (StringUtils.isNotEmpty(streamId)) {
-                response.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
+                fullResponse.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
             }
             final boolean close = request.headers().contains("Connection",
                     HttpHeaderValues.CLOSE, true)
@@ -64,17 +64,17 @@ public class FullHttpResponseContext extends AbstractResponseContext {
                     && !request.headers().contains("Connection",
                     HttpHeaderValues.KEEP_ALIVE, true);
             if (!close) {
-                response.headers()
+                fullResponse.headers()
                         .set("Content-Length", buffer.readableBytes());
             }
-            final HttpHeaders headers = serverHeader(dateHeader(response.headers()));
+            final HttpHeaders headers = serverHeader(dateHeader(fullResponse.headers()));
             final Headers analogHeaders = getResponseHeaders();
             for (final String headerName : analogHeaders.getNames()) {
                 headers.set(headerName, analogHeaders.getValues(headerName));
             }
 
             final Channel channel = getChannelHandlerContext().channel();
-            final ChannelFuture future = channel.writeAndFlush(response);
+            final ChannelFuture future = channel.writeAndFlush(fullResponse);
             if (close) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
