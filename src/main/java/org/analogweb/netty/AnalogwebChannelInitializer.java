@@ -37,125 +37,132 @@ import org.analogweb.util.logging.Logs;
  * @author y2k2mt
  */
 public class AnalogwebChannelInitializer
-        extends
-        ChannelInitializer<SocketChannel> {
+		extends
+			ChannelInitializer<SocketChannel> {
 
-    private static final Log log = Logs
-            .getLog(AnalogwebChannelInitializer.class);
-    private final SslContext sslCtx;
-    private final Application app;
-    private final ApplicationProperties properties;
-    private final Properties props = Properties.instance();
-    private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
-            props.getExecutorParallelism());
+	private static final Log log = Logs
+			.getLog(AnalogwebChannelInitializer.class);
+	private final SslContext sslCtx;
+	private final Application app;
+	private final ApplicationProperties properties;
+	private final Properties props = Properties.instance();
+	private final EventExecutorGroup handlerSpecificExecutorGroup = new DefaultEventExecutorGroup(
+			props.getExecutorParallelism());
 
-    public AnalogwebChannelInitializer(SslContext ssl, Application app,
-                                       ApplicationContext contextResolver, ApplicationProperties props) {
-        Assertion.notNull(app, Application.class.getName());
-        this.sslCtx = ssl == null ? resolveSslContext() : ssl;
-        this.properties = props;
-        this.app = app;
-        getApplication().run(contextResolver, getApplicationProperties(),
-                getClassCollectors(), getClassLoader());
-    }
+	public AnalogwebChannelInitializer(SslContext ssl, Application app,
+			ApplicationContext contextResolver, ApplicationProperties props) {
+		Assertion.notNull(app, Application.class.getName());
+		this.sslCtx = ssl == null ? resolveSslContext() : ssl;
+		this.properties = props;
+		this.app = app;
+		getApplication().run(contextResolver, getApplicationProperties(),
+				getClassCollectors(), getClassLoader());
+	}
 
-    protected SslContext resolveSslContext() {
-        if (props.isSSL()) {
-            try {
-                File privateKey = props.getSSLPrivateKey(getApplicationProperties());
-                File certificate = props.getSSLCertificate(getApplicationProperties());
-                String passPhrase = props.getSSLKeyPassPhrase(getApplicationProperties());
-                if (privateKey == null || certificate == null) {
-                    log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE, "WNT000002");
-                    final SelfSignedCertificate ssc = new SelfSignedCertificate();
-                    privateKey = ssc.privateKey();
-                    certificate = ssc.certificate();
-                    passPhrase = null;
-                }
-                SslContextBuilder building = SslContextBuilder
-                        .forServer(certificate, privateKey, passPhrase)
-                        .sslProvider(props.isOpenSSL() ? SslProvider.OPENSSL : SslProvider.JDK)
-                        .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE);
-                if (props.isHTTP2()) {
-                    building.applicationProtocolConfig(new ApplicationProtocolConfig(
-                            Protocol.ALPN,
-                            SelectorFailureBehavior.NO_ADVERTISE,
-                            SelectedListenerFailureBehavior.ACCEPT,
-                            ApplicationProtocolNames.HTTP_2,
-                            ApplicationProtocolNames.HTTP_1_1
-                    ));
-                }
-                return building.build();
-            } catch (final SSLException e) {
-                throw new ApplicationRuntimeException(e) {
-                    private static final long serialVersionUID = 1L;
-                };
-            } catch (final CertificateException e) {
-                throw new ApplicationRuntimeException(e) {
-                    private static final long serialVersionUID = 1L;
-                };
-            }
-        } else {
-            return null;
-        }
-    }
+	protected SslContext resolveSslContext() {
+		if (props.isSSL()) {
+			try {
+				File privateKey = props
+						.getSSLPrivateKey(getApplicationProperties());
+				File certificate = props
+						.getSSLCertificate(getApplicationProperties());
+				String passPhrase = props
+						.getSSLKeyPassPhrase(getApplicationProperties());
+				if (privateKey == null || certificate == null) {
+					log.log(ServerFactoryImpl.PLUGIN_MESSAGE_RESOURCE,
+							"WNT000002");
+					final SelfSignedCertificate ssc = new SelfSignedCertificate();
+					privateKey = ssc.privateKey();
+					certificate = ssc.certificate();
+					passPhrase = null;
+				}
+				SslContextBuilder building = SslContextBuilder
+						.forServer(certificate, privateKey, passPhrase)
+						.sslProvider(
+								props.isOpenSSL()
+										? SslProvider.OPENSSL
+										: SslProvider.JDK)
+						.ciphers(Http2SecurityUtil.CIPHERS,
+								SupportedCipherSuiteFilter.INSTANCE);
+				if (props.isHTTP2()) {
+					building.applicationProtocolConfig(new ApplicationProtocolConfig(
+							Protocol.ALPN,
+							SelectorFailureBehavior.NO_ADVERTISE,
+							SelectedListenerFailureBehavior.ACCEPT,
+							ApplicationProtocolNames.HTTP_2,
+							ApplicationProtocolNames.HTTP_1_1));
+				}
+				return building.build();
+			} catch (final SSLException e) {
+				throw new ApplicationRuntimeException(e) {
+					private static final long serialVersionUID = 1L;
+				};
+			} catch (final CertificateException e) {
+				throw new ApplicationRuntimeException(e) {
+					private static final long serialVersionUID = 1L;
+				};
+			}
+		} else {
+			return null;
+		}
+	}
 
-    @Override
-    public void initChannel(SocketChannel ch) throws Exception {
-        final SslContext ssl = getSslContext();
-        if (ssl == null) {
-            initChannelWithClearText(ch);
-        } else {
-            initChannelWithSsl(ssl, ch);
-        }
-    }
+	@Override
+	public void initChannel(SocketChannel ch) throws Exception {
+		final SslContext ssl = getSslContext();
+		if (ssl == null) {
+			initChannelWithClearText(ch);
+		} else {
+			initChannelWithSsl(ssl, ch);
+		}
+	}
 
-    protected void initChannelWithSsl(SslContext sslContext, SocketChannel ch)
-            throws Exception {
-        ch.pipeline().addLast(
-                sslContext.newHandler(ch.alloc()),
-                new AnalogwebApplicationProtocolNegotiationHandler(
-                        getApplication(), getApplicationProperties()));
-    }
+	protected void initChannelWithSsl(SslContext sslContext, SocketChannel ch)
+			throws Exception {
+		ch.pipeline().addLast(
+				sslContext.newHandler(ch.alloc()),
+				new AnalogwebApplicationProtocolNegotiationHandler(
+						getApplication(), getApplicationProperties()));
+	}
 
-    protected void initChannelWithClearText(SocketChannel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(
-                Properties.instance().getMaxAggregationSize(getApplicationProperties())));
-        pipeline.addLast(getHandlerSpecificExecutorGroup(),
-                createServerHandler());
-    }
+	protected void initChannelWithClearText(SocketChannel ch) throws Exception {
+		final ChannelPipeline pipeline = ch.pipeline();
+		pipeline.addLast(new HttpServerCodec());
+		pipeline.addLast(new HttpObjectAggregator(Properties.instance()
+				.getMaxAggregationSize(getApplicationProperties())));
+		pipeline.addLast(getHandlerSpecificExecutorGroup(),
+				createServerHandler());
+	}
 
-    protected ChannelHandler createServerHandler() {
-        return new AnalogwebChannelInboundHandler(getApplication(),
-                getApplicationProperties());
-    }
+	protected ChannelHandler createServerHandler() {
+		return new AnalogwebChannelInboundHandler(getApplication(),
+				getApplicationProperties());
+	}
 
-    protected SslContext getSslContext() {
-        return this.sslCtx;
-    }
+	protected SslContext getSslContext() {
+		return this.sslCtx;
+	}
 
-    protected Application getApplication() {
-        return this.app;
-    }
+	protected Application getApplication() {
+		return this.app;
+	}
 
-    protected ApplicationProperties getApplicationProperties() {
-        return this.properties;
-    }
+	protected ApplicationProperties getApplicationProperties() {
+		return this.properties;
+	}
 
-    protected ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
-    }
+	protected ClassLoader getClassLoader() {
+		return Thread.currentThread().getContextClassLoader();
+	}
 
-    protected EventExecutorGroup getHandlerSpecificExecutorGroup() {
-        return this.handlerSpecificExecutorGroup;
-    }
+	protected EventExecutorGroup getHandlerSpecificExecutorGroup() {
+		return this.handlerSpecificExecutorGroup;
+	}
 
-    protected List<ClassCollector> getClassCollectors() {
-        final List<ClassCollector> list = new ArrayList<ClassCollector>();
-        list.add(new JarClassCollector());
-        list.add(new FileClassCollector());
-        return Collections.unmodifiableList(list);
-    }
+	protected List<ClassCollector> getClassCollectors() {
+		final List<ClassCollector> list = new ArrayList<ClassCollector>();
+		list.add(new JarClassCollector());
+		list.add(new FileClassCollector());
+		return Collections.unmodifiableList(list);
+	}
 }
