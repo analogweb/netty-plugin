@@ -16,54 +16,60 @@ import org.analogweb.ApplicationProperties;
  * @author y2k2mt
  */
 public class AnalogwebApplicationProtocolNegotiationHandler
-        extends
-        ApplicationProtocolNegotiationHandler {
-    private final Application app;
-    private final ApplicationProperties properties;
+		extends
+			ApplicationProtocolNegotiationHandler {
+	private final Application app;
+	private final ApplicationProperties properties;
 
-    protected AnalogwebApplicationProtocolNegotiationHandler(Application app,
-                                                             ApplicationProperties props) {
-        super(ApplicationProtocolNames.HTTP_1_1);
-        this.app = app;
-        this.properties = props;
-    }
+	protected AnalogwebApplicationProtocolNegotiationHandler(Application app,
+			ApplicationProperties props) {
+		super(ApplicationProtocolNames.HTTP_1_1);
+		this.app = app;
+		this.properties = props;
+	}
 
-    @Override
-    protected void configurePipeline(ChannelHandlerContext ctx, String protocol)
-            throws Exception {
-        if (Properties.instance().isHTTP2() && ApplicationProtocolNames.HTTP_2.equals(protocol)) {
-            DefaultHttp2Connection connection = new DefaultHttp2Connection(true);
-            InboundHttp2ToHttpAdapter listener = new InboundHttp2ToHttpAdapterBuilder(connection)
-                    .propagateSettings(true).validateHttpHeaders(false)
-                    .maxContentLength(Properties.instance().getMaxContentLength()).build();
+	@Override
+	protected void configurePipeline(ChannelHandlerContext ctx, String protocol)
+			throws Exception {
+		if (Properties.instance().isHTTP2()
+				&& ApplicationProtocolNames.HTTP_2.equals(protocol)) {
+			DefaultHttp2Connection connection = new DefaultHttp2Connection(true);
+			InboundHttp2ToHttpAdapter listener = new InboundHttp2ToHttpAdapterBuilder(
+					connection)
+					.propagateSettings(true)
+					.validateHttpHeaders(false)
+					.maxContentLength(
+							Properties.instance().getMaxContentLength())
+					.build();
 
-            ctx.pipeline().addLast(
-                    new HttpToHttp2ConnectionHandlerBuilder()
-                            .frameListener(listener)
-                            .connection(connection).build()
-            );
+			ctx.pipeline().addLast(
+					new HttpToHttp2ConnectionHandlerBuilder()
+							.frameListener(listener).connection(connection)
+							.build());
 
-            ctx.pipeline().addLast(new AnalogwebChannelInboundHandler(app, properties));
-            return;
-        }
+			ctx.pipeline().addLast(
+					new AnalogwebChannelInboundHandler(app, properties));
+			return;
+		}
 
-        if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
-            ctx.pipeline().addLast(
-                    new HttpServerCodec(),
-                    new HttpObjectAggregator(Properties.instance().getMaxAggregationSize(properties)),
-                    new AnalogwebChannelInboundHandler(getApplication(),
-                            getApplicationProperties()));
-            return;
-        }
+		if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
+			ctx.pipeline().addLast(
+					new HttpServerCodec(),
+					new HttpObjectAggregator(Properties.instance()
+							.getMaxAggregationSize(properties)),
+					new AnalogwebChannelInboundHandler(getApplication(),
+							getApplicationProperties()));
+			return;
+		}
 
-        throw new IllegalStateException("Unknown protocol: " + protocol);
-    }
+		throw new IllegalStateException("Unknown protocol: " + protocol);
+	}
 
-    protected Application getApplication() {
-        return this.app;
-    }
+	protected Application getApplication() {
+		return this.app;
+	}
 
-    protected ApplicationProperties getApplicationProperties() {
-        return this.properties;
-    }
+	protected ApplicationProperties getApplicationProperties() {
+		return this.properties;
+	}
 }
