@@ -25,7 +25,7 @@
     <name>analogweb-netty</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netty.version>4.1.33.Final</netty.version>
+        <netty.version>4.1.41.Final</netty.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -38,7 +38,7 @@
     <parent>
         <groupId>org.analogweb</groupId>
         <artifactId>analogweb-parent-modules</artifactId>
-        <version>16</version>
+        <version>17</version>
         <relativePath />
     </parent>
     <dependencies>
