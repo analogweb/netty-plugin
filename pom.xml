@@ -33,7 +33,7 @@
         <url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
         <connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v0.11.3</tag>
     </scm>
     <parent>
         <groupId>org.analogweb</groupId>
