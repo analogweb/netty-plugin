@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.analogweb</groupId>
     <artifactId>analogweb-netty</artifactId>
-    <version>0.11.7-SNAPSHOT</version>
+    <version>0.12.0</version>
     <packaging>jar</packaging>
     <name>analogweb-netty</name>
     <properties>
@@ -33,7 +33,8 @@
         <url>scm:git:git@github.com:analogweb/netty-plugin.git</url>
         <connection>scm:git:git@github.com:analogweb/netty-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:analogweb/netty-plugin.git</developerConnection>
-    </scm>
+      <tag>v0.12.0</tag>
+  </scm>
     <parent>
         <groupId>org.analogweb</groupId>
         <artifactId>analogweb-parent-modules</artifactId>
